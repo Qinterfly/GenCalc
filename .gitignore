@@ -1,0 +1,8 @@
+archive
+help
+bin
+obj
+tests/bin
+tests/obj
+.vs
+TODO.txt

@@ -1,0 +1,79 @@
+﻿<Window x:Name="mainWindow" x:Class="GenCalc.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GenCalc"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="700" Width="800" WindowStartupLocation="CenterScreen" FontSize="11">
+    <DockPanel x:Name="mainPanel" Margin="0">
+        <StatusBar x:Name="statusBar" Height="20" VerticalAlignment="Top" DockPanel.Dock="Bottom" Margin="0,0,0,0"/>
+        <Grid x:Name="centralGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="272*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="175*"/>
+            </Grid.ColumnDefinitions>
+            <Grid x:Name="graphGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="113*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="269*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="281*"/>
+                </Grid.RowDefinitions>
+                <TabControl x:Name="tabInputGraphs" Margin="5">
+                    <TabItem x:Name="tabItemGraphImaginary" Header="Imaginary">
+                        <Grid x:Name="gridGraphImaginary" Margin="0">
+                            <WpfPlot x:Name="graphImaginary" Margin="0"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem x:Name="tabItemGraphReal" Header="Real"/>
+                    <TabItem x:Name="tabItemGraphAmplitude" Header="Amplitude"/>
+                </TabControl>
+                <GridSplitter x:Name="graphGridSplitter" HorizontalAlignment="Stretch" ShowsPreview="False" Height="2" Grid.Row="1" VerticalAlignment="Center" Background="#FFDADADA"/>
+                <TabControl x:Name="tabOutputGraphs" Margin="5" Grid.Row="2">
+                    <TabItem x:Name="tabItemGraphDecrement" Header="Logarithmic Decrement">
+                        <Grid x:Name="gridGraphDecrement" Margin="0">
+                            <WpfPlot x:Name="graphDecrement" Margin="0"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem x:Name="tabItemGraphModalMass" Header="Modal Mass"/>
+                    <TabItem x:Name="tabItemGraphModalStiffness" Header="Modal Stiffness"/>
+                    <TabItem x:Name="tabItemGraphModalDamping" Header="Modal Damping"/>
+                </TabControl>
+            </Grid>
+            <GridSplitter x:Name="centralGridSplitter" Grid.Column="1" ShowsPreview="False" Width="2" HorizontalAlignment="Center" Background="#FFDADADA" Margin="0,5"/>
+            <Grid x:Name="controlGrid" Grid.Column="2" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="328*"/>
+                    <RowDefinition Height="227*"/>
+                </Grid.RowDefinitions>
+                <GroupBox x:Name="groupBoxProject" Header="Project" Margin="0" FontWeight="Bold">
+                    <Grid x:Name="gridProject" Margin="0,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="73*"/>
+                            <ColumnDefinition Width="9*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Label x:Name="labelPathProject" Content="Path: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" Height="24.63" Width="37.44" FontWeight="Normal"/>
+                        <Label x:Name="labelSelectedSignal" Content="Signal:" HorizontalAlignment="Left" Margin="0" Grid.Row="1" VerticalAlignment="Center" FontWeight="Normal" Height="24.63" Width="41.853"/>
+                        <TextBlock x:Name="textSelectedSignal" Grid.Column="1" Margin="1.982,5" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Normal" Height="14.63"/>
+                        <Button x:Name="buttonOpenProject" Content="" Grid.Column="2" FontWeight="Normal" Margin="0,0,0,5" VerticalAlignment="Center" Background="{x:Null}"/>
+                        <Button x:Name="buttonSelectSignal" Content="" Grid.Column="2" Margin="0" Grid.Row="1" VerticalAlignment="Center" FontWeight="Normal" Background="{x:Null}"/>
+                        <TextBox x:Name="textBoxProjectPath" Grid.Column="1" Margin="5,0,5,5" TextWrapping="Wrap" FontWeight="Normal" VerticalAlignment="Center" Height="16.63"/>
+                        <TextBox x:Name="textBoxSelectedSignal" Grid.Column="1" Margin="5,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox x:Name="groupBoxCalculationParameters" Header="Calculation Parameters" Margin="0" Grid.Row="1" FontWeight="Bold" d:IsHidden="True"/>
+                <GroupBox x:Name="groupBoxOutput" Header="Output" Margin="0" Grid.Row="2" FontWeight="Bold"/>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
