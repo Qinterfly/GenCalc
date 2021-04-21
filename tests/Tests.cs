@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.IO;
-using System.Threading;
 using GenCalc.Core.Project;
-using GenCalc;
+using GenCalc.Core.Numerical;
 
 namespace Tests
 {
@@ -11,43 +11,29 @@ namespace Tests
     {
         public Tests()
         {
-            string filePath = Path.GetFullPath(mBaseDirectory + "/" + mProjectName);
+            string filePath = Path.GetFullPath(baseDirectory + "/" + projectName);
             mProject = new LMSProject(filePath);
-            
         }
 
         [TestMethod]
-        public void TestSelection()
+        public void Test1Selection()
         {
-            bool isSelected = mProject.retrieveSelection("Section 2/Отч 6,9 СГИКр1 21,55Гц/ResponsesSpectra/Harmonic Spectrum W:56:-Y");
-            Assert.IsTrue(isSelected);
-        }
-
-
-        [TestMethod]
-        public void TestCalculation()
-        {
-
+            mSelectedSignal = mProject.retrieveSelectedSignal(signalPath);
+            Assert.IsTrue(mSelectedSignal != null);
         }
 
         [TestMethod]
-        public void TestGui()
+        public void Test2Calculation()
         {
-            MainWindow window = null;
-            var thread = new Thread(() =>
-            {
-                window = new MainWindow();
-                window.Closed += (s, e) => window.Dispatcher.InvokeShutdown();
-                window.Show();
-                System.Windows.Threading.Dispatcher.Run();
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
+            Tuple<double, double> frequencyBoundaries = new Tuple<double, double>(-1.0, -1.0);
+            Tuple<double, double> levelsBoundaries = new Tuple<double, double>(0.0, 1.0);
+            ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedSignal, ref frequencyBoundaries, ref levelsBoundaries, 512);
         }
 
-        private const string mBaseDirectory = "../../../examples";
-        private const string mProjectName = "Mitten.lms";
-        private LMSProject mProject = null;
+        public static string baseDirectory = "../../../examples";
+        public static string projectName = "Mitten.lms";
+        public static string signalPath = "Section 2/Отч 6,9 СГИКр1 21,55Гц/ResponsesSpectra/Harmonic Spectrum W:56:-Y";
+        public static LMSProject mProject = null;
+        public static Response mSelectedSignal = null;
     }
 }

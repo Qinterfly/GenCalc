@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GenCalc.Core.Project
+namespace GenCalc.Core.Numerical
 {
     using PairDouble = Tuple<double, double>;
 

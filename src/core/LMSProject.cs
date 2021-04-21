@@ -1,9 +1,10 @@
 ﻿using System;
 using LMSTestLabAutomation;
+using GenCalc.Core.Numerical;
 
 namespace GenCalc.Core.Project
 {
-    public partial class LMSProject
+    public class LMSProject
     {
         public LMSProject(in string filePath)
         {
@@ -24,9 +25,9 @@ namespace GenCalc.Core.Project
             mDatabase = mApp.ActiveBook.Database();
         }
 
-        public bool retrieveSelection(string pathSignal = null)
+        public Response retrieveSelectedSignal(string pathSignal = null)
         {
-            mSelectedSignal = null;
+            Response selectedSignal = null;
             try
             {
                 IBlock2 signal = null;
@@ -53,17 +54,17 @@ namespace GenCalc.Core.Project
                     signal = (IBlock2)mDatabase.GetItem(pathSignal);
                 }
                 if (signal == null)
-                    return false;
+                    return null;
                 AttributeMap properties = signal.Properties;
                 string measuredQuantity = properties["Measured quantity"];
                 if (measuredQuantity.Equals("Acceleration"))
-                    mSelectedSignal = retrieveAcceleration(pathSignal, signal, properties);
+                    selectedSignal = retrieveAcceleration(pathSignal, signal, properties);
             }
             catch
             {
                 
             }
-            return mSelectedSignal == null;
+            return selectedSignal;
         }
 
         private Response retrieveAcceleration(in string path, in IBlock2 signal, in AttributeMap properties)
@@ -87,10 +88,8 @@ namespace GenCalc.Core.Project
             return currentResponse;
         }
 
-        // Properties and fields
         private string mPath;
-        private readonly Application mApp = null;
-        private readonly IDatabase mDatabase = null;
-        private Response mSelectedSignal = null; 
+        private Application mApp = null;
+        private IDatabase mDatabase = null;
     }
 }
