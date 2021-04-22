@@ -84,7 +84,7 @@ namespace GenCalc.Core.Project
                 realPart[k]      = data[k, 0] * sign;
                 imaginaryPath[k] = data[k, 1] * sign * (-1.0);
             }
-            Response currentResponse = new Response(signal.Label, path, frequency, realPart, imaginaryPath);
+            Response currentResponse = new Response(path, signal.Label, frequency, realPart, imaginaryPath);
             return currentResponse;
         }
 

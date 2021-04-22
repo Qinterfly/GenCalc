@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace GenCalc.Core.Numerical
 {
-    using PairDouble = Tuple<double, double>;
-
     public class Response
     {
         public Response(in string path, in string name, in double[] frequency, in double[] realPart, in double[] imaginaryPart)
@@ -25,48 +24,35 @@ namespace GenCalc.Core.Numerical
             return Path == another.Path;
         }
 
-        private PairDouble findPeak(double[] X, double[,] Y, int iColumn)
+        public double getFrequencyValue()
         {
-            double maxValue = 0.0;
-            double tempValue;
-            double amplitude = 0.0;
-            double root = -1.0;
-            int nY = Y.GetLength(0);
-            for (int i = 0; i != nY; ++i)
+            double frequency;
+            int indFrequency = Math.Max(Path.IndexOf("Гц"), Path.IndexOf("Hz"));
+            if (indFrequency < 0)
+                return 0.0;
+            string strFrequency = null;
+            bool isValue;
+            bool isSequence = false;
+            string path = Path.Replace(",", ".");
+            while (indFrequency > 0)
             {
-                tempValue = Math.Abs(Y[i, iColumn]);
-                if (tempValue > maxValue)
+                --indFrequency;
+                isValue = double.TryParse(path[indFrequency].ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out double tempVal);
+                if (isValue || path[indFrequency] == '.')
                 {
-                    maxValue = tempValue; 
-                    amplitude = Math.Sqrt(Math.Pow(Y[i, 0], 2.0) + Math.Pow(Y[i, 1], 2.0));
-                    root = X[i];
+                    strFrequency = path[indFrequency] + strFrequency;
+                    isSequence = true;
                 }
-            }
-            return new PairDouble(root, amplitude);
-        }
-
-        private PairDouble findRoot(double[] X, double[,] Y, int iColumn)
-        {
-            double prevValue = Y[0, iColumn];
-            double root = -1.0;
-            double amplitude = 0.0;
-            bool isFound = false;
-            int nY = Y.GetLength(0);
-            for (int i = 1; i != nY; ++i)
-            {
-                isFound = Y[i, iColumn] * prevValue < 0.0;
-                if (isFound)
+                else if (isSequence)
                 {
-                    root = (X[i] + X[i - 1]) / 2.0;
-                    // Calculating amplitude
-                    amplitude = Math.Sqrt(Math.Pow(Y[i - 1, 0], 2.0) + Math.Pow(Y[i - 1, 1], 2.0)); // First
-                    amplitude += Math.Sqrt(Math.Pow(Y[i, 0], 2.0) + Math.Pow(Y[i, 1], 2.0));        // Second
-                    amplitude /= 2.0;                                                               // Mean
                     break;
                 }
-                prevValue = Y[i, iColumn];
+
             }
-            return isFound ? new PairDouble(root, amplitude) : null;
+            if (double.TryParse(strFrequency, NumberStyles.Any, CultureInfo.InvariantCulture, out frequency))
+                return frequency;
+            else
+                return 0.0;
         }
 
         // Data

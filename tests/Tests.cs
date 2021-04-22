@@ -25,9 +25,9 @@ namespace Tests
         [TestMethod]
         public void Test2Calculation()
         {
-            Tuple<double, double> frequencyBoundaries = new Tuple<double, double>(-1.0, -1.0);
-            Tuple<double, double> levelsBoundaries = new Tuple<double, double>(0.0, 1.0);
-            ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedSignal, ref frequencyBoundaries, ref levelsBoundaries, 512);
+            Tuple<double, double> frequencyBoundaries = new Tuple<double, double>(-1, -1);
+            Tuple<double, double> levelsBoundaries = new Tuple<double, double>(0.1, 0.9);
+            ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedSignal, ref frequencyBoundaries, ref levelsBoundaries, 20);
         }
 
         public static string baseDirectory = "../../../examples";
