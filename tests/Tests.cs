@@ -32,7 +32,7 @@ namespace Tests
 
         public static string baseDirectory = "../../../examples";
         public static string projectName = "Mitten.lms";
-        public static string signalPath = "Section 2/Отч 6,9 СГИКр1 21,55Гц/ResponsesSpectra/Harmonic Spectrum W:56:-Y";
+        public static string signalPath = "Section 2/Отч 6,9 СГИКр1 21,55Гц/ResponsesSpectra/Harmonic Spectrum W:56:+X";
         public static LMSProject mProject = null;
         public static Response mSelectedSignal = null;
     }

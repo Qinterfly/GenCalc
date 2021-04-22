@@ -32,9 +32,9 @@ namespace GenCalc.Core.Numerical
                 Levels[i] = startLevel + i * stepLevel;
             // Calculate decrements
             Decrement = new DecrementData();
-            double resonanceFrequency = response.getFrequencyValue();
-            resonanceFrequency = retrieveImagResonanceFrequency(splineImagPart, frequencyBoundaries, numInterpolationPoints, resonanceFrequency);
-            calculateDecrementByImaginary(splineImagPart, frequencyBoundaries, numInterpolationPoints, resonanceFrequency);
+            ResonanceFrequency = response.getFrequencyValue();
+            ResonanceFrequency = retrieveImagResonanceFrequency(splineImagPart, frequencyBoundaries, numInterpolationPoints, ResonanceFrequency);
+            calculateDecrementByImaginary(splineImagPart, frequencyBoundaries, numInterpolationPoints);
         }
 
         private bool correctFrequencyBoundaries(in Response response, ref Tuple<double, double> boundaries)
@@ -72,7 +72,7 @@ namespace GenCalc.Core.Numerical
             levelsBoundaries = new PairDouble(resMin, resMax);
         }
 
-        private void calculateDecrementByImaginary(CubicSpline splineImag, in PairDouble frequencyBoundaries, int numInterpolationPoints, double resonanceFrequency)
+        private void calculateDecrementByImaginary(CubicSpline splineImag, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
@@ -82,7 +82,7 @@ namespace GenCalc.Core.Numerical
             double minValue = minMax.Item1;
             double levelsInterval = minMax.Item2 - minValue;
             double targetValue;
-            double resonancePeak = splineImag.Interpolate(resonanceFrequency);
+            double resonancePeak = splineImag.Interpolate(ResonanceFrequency);
             int numLevels = Levels.Length;
             Decrement.Imaginary = new Dictionary<double, double>();
             for (int iLevel = 0; iLevel != numLevels; ++iLevel)
@@ -94,11 +94,13 @@ namespace GenCalc.Core.Numerical
                 int nRoots = roots.Count;
                 if (nRoots < 2)
                     continue;
-                leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[0], startFrequency, endFrequency);
-                rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[nRoots - 1], startFrequency, endFrequency);
+                int leftIndex = roots.FindLastIndex(x => x < ResonanceFrequency);
+                int rightIndex = roots.FindIndex(x => x > ResonanceFrequency);
+                leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
+                rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
                 if (leftFrequency < startFrequency || rightFrequency > endFrequency || leftFrequency > rightFrequency)
                     continue;
-                double deltaFreq = (rightFrequency - leftFrequency) / resonanceFrequency;
+                double deltaFreq = (rightFrequency - leftFrequency) / ResonanceFrequency;
                 double fracAmp = Math.Abs(targetValue / resonancePeak);
                 double decrement = Math.PI * deltaFreq * Math.Sqrt(fracAmp / (1.0 - fracAmp));
                 if (!Double.IsNaN(decrement))
@@ -132,6 +134,7 @@ namespace GenCalc.Core.Numerical
         public readonly double[] Levels;
         public readonly DecrementData Decrement;
         public readonly ModalCharateristics ModalData;
+        public readonly double ResonanceFrequency;
     }
 
     public class ModalCharateristics
