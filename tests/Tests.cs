@@ -1,8 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Threading;
 using GenCalc.Core.Project;
 using GenCalc.Core.Numerical;
+using GenCalc;
+using MahApps.Metro.Controls;
 
 namespace Tests
 {
@@ -28,6 +31,26 @@ namespace Tests
             Tuple<double, double> frequencyBoundaries = new Tuple<double, double>(-1, -1);
             Tuple<double, double> levelsBoundaries = new Tuple<double, double>(0.1, 0.9);
             ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedSignal, ref frequencyBoundaries, ref levelsBoundaries, 20);
+        }
+
+        [TestMethod]
+        public void Test3Plot()
+        {
+            var t = new Thread(() =>
+            {
+                var window = new MainWindow();
+                string filePath = Path.GetFullPath(baseDirectory + "/" + projectName);
+                window.openProject(filePath);
+                window.selectSignal(signalPath);
+                window.calculateCharacteristics();
+                window.plotSignals();
+                window.Closed += (s, e) => window.Dispatcher.InvokeShutdown();
+                window.Show();
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+            t.Join();
         }
 
         public static string baseDirectory = "../../../examples";

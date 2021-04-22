@@ -6,6 +6,12 @@ using MathNet.Numerics.RootFinding;
 namespace GenCalc.Core.Numerical
 {
     using PairDouble = Tuple<double, double>;
+    public enum DecrementType
+    {
+        kImaginary,
+        kAmplitude
+    }
+
     public class ResponseCharacteristics
     {
         public ResponseCharacteristics(in Response response,
@@ -34,7 +40,8 @@ namespace GenCalc.Core.Numerical
             Decrement = new DecrementData();
             ResonanceFrequency = response.getFrequencyValue();
             ResonanceFrequency = retrieveImagResonanceFrequency(splineImagPart, frequencyBoundaries, numInterpolationPoints, ResonanceFrequency);
-            calculateDecrementByImaginary(splineImagPart, frequencyBoundaries, numInterpolationPoints);
+            calculateDecrement(DecrementType.kImaginary, splineImagPart, frequencyBoundaries, numInterpolationPoints);
+            calculateDecrement(DecrementType.kAmplitude, splineAmplitude, frequencyBoundaries, numInterpolationPoints);
         }
 
         private bool correctFrequencyBoundaries(in Response response, ref Tuple<double, double> boundaries)
@@ -72,39 +79,63 @@ namespace GenCalc.Core.Numerical
             levelsBoundaries = new PairDouble(resMin, resMax);
         }
 
-        private void calculateDecrementByImaginary(CubicSpline splineImag, in PairDouble frequencyBoundaries, int numInterpolationPoints)
+        private void calculateDecrement(DecrementType type, CubicSpline spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
             double leftFrequency = startFrequency;
             double rightFrequency = endFrequency;
-            PairDouble minMax = Utilities.findSplineMinMax(splineImag, startFrequency, endFrequency, numInterpolationPoints);
+            PairDouble minMax = Utilities.findSplineMinMax(spline, startFrequency, endFrequency, numInterpolationPoints);
             double minValue = minMax.Item1;
             double levelsInterval = minMax.Item2 - minValue;
             double targetValue;
-            double resonancePeak = splineImag.Interpolate(ResonanceFrequency);
+            double resonancePeak = spline.Interpolate(ResonanceFrequency);
             int numLevels = Levels.Length;
-            Decrement.Imaginary = new Dictionary<double, double>();
+            switch (type)
+            {
+                case DecrementType.kImaginary:
+                    Decrement.Imaginary = new Dictionary<double, double>();
+                    break;
+                case DecrementType.kAmplitude:
+                    Decrement.Amplitude = new Dictionary<double, double>();
+                    break;
+            }
             for (int iLevel = 0; iLevel != numLevels; ++iLevel)
             {
                 targetValue = Levels[iLevel] * levelsInterval + minValue;
-                Func<double, double> fun = x => splineImag.Interpolate(x) - targetValue;
-                Func<double, double> diffFun = x => splineImag.Differentiate(x);
+                Func<double, double> fun = x => spline.Interpolate(x) - targetValue;
+                Func<double, double> diffFun = x => spline.Differentiate(x);
                 List<double> roots = Utilities.findAllRootsBisection(fun, startFrequency, endFrequency, numInterpolationPoints);
                 int nRoots = roots.Count;
                 if (nRoots < 2)
                     continue;
                 int leftIndex = roots.FindLastIndex(x => x < ResonanceFrequency);
                 int rightIndex = roots.FindIndex(x => x > ResonanceFrequency);
+                if (leftIndex < 0 || rightIndex < 0)
+                {
+                    leftIndex = 0;
+                    rightIndex = nRoots - 1;
+                }
                 leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
                 rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
                 if (leftFrequency < startFrequency || rightFrequency > endFrequency || leftFrequency > rightFrequency)
                     continue;
                 double deltaFreq = (rightFrequency - leftFrequency) / ResonanceFrequency;
                 double fracAmp = Math.Abs(targetValue / resonancePeak);
-                double decrement = Math.PI * deltaFreq * Math.Sqrt(fracAmp / (1.0 - fracAmp));
-                if (!Double.IsNaN(decrement))
-                    Decrement.Imaginary.Add(Levels[iLevel], decrement);
+                double decrement;
+                switch (type)
+                {
+                    case DecrementType.kImaginary:
+                        decrement = Math.PI * deltaFreq * Math.Sqrt(fracAmp / (1.0 - fracAmp));
+                        if (!Double.IsNaN(decrement))
+                            Decrement.Imaginary.Add(Levels[iLevel], decrement);
+                        break;
+                    case DecrementType.kAmplitude:
+                        decrement = Math.PI * deltaFreq * fracAmp / Math.Sqrt(1.0 - Math.Pow(fracAmp, 2.0));
+                        if (!Double.IsNaN(decrement))
+                            Decrement.Amplitude.Add(Levels[iLevel], decrement);
+                        break;
+                }
             }
         }
 
@@ -147,6 +178,6 @@ namespace GenCalc.Core.Numerical
     public class DecrementData
     {
         public Dictionary<double, double> Imaginary;
-        public double[] Amplitude;
+        public Dictionary<double, double> Amplitude;
     }
 }

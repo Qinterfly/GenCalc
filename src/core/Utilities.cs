@@ -69,5 +69,12 @@ namespace GenCalc.Core.Numerical
             }
             return roots;
         }
+
+        public static PairDouble levelsBoundariesToValues(in Response signal, in PairDouble levelsBoundaries)
+        {
+            PairDouble resBound = null;
+            // TODO
+            return resBound;
+        }
     }
 }

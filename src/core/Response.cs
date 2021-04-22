@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace GenCalc.Core.Numerical
@@ -53,6 +52,11 @@ namespace GenCalc.Core.Numerical
                 return frequency;
             else
                 return 0.0;
+        }
+
+        public Tuple<double, double> getFrequencyBoundaries() 
+        {
+            return new Tuple<double, double>(Frequency[0], Frequency[Frequency.Length - 1]);
         }
 
         // Data

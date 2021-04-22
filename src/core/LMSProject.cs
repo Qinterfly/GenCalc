@@ -25,6 +25,8 @@ namespace GenCalc.Core.Project
             mDatabase = mApp.ActiveBook.Database();
         }
 
+        public bool isOpened() { return mApp != null; }
+
         public Response retrieveSelectedSignal(string pathSignal = null)
         {
             Response selectedSignal = null;
