@@ -118,5 +118,11 @@ namespace GenCalc
             numericRightFrequencyBoundary.Value = boundaries.Item2;
             calculateAndPlot();
         }
+
+        private void resonanceFrequencyChanged(double resonanceFrequency)
+        {
+            numericResonanceFrequency.Value = resonanceFrequency;
+            calculateAndPlot();
+        }
     }
 }

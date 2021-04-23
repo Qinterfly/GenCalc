@@ -24,13 +24,18 @@ namespace GenCalc
             mSignalGraphModels.Add(new ImaginaryPartGraphModel(graphImaginaryPart));
             mSignalGraphModels.Add(new RealPartGraphModel(graphRealPart));
             mSignalGraphModels.Add(new AmplitudeGraphModel(graphAmplitude));
+            mHodographGraphModel = new HodographGraphModel(graphHodograph);
             mDecrementGraphModel = new DecrementGraphModel(graphDecrement);
         }
 
         private void setGraphEvents()
         {
             foreach (AbstractSignalGraphModel model in mSignalGraphModels)
+            {
                 model.FrequencyBoundariesEvent += frequencyBoundariesChanged;
+                model.ResonanceFrequencyEvent += resonanceFrequencyChanged;
+            }
+                
         }
 
         public void openProject(string filePath)
@@ -61,7 +66,10 @@ namespace GenCalc
             setFrequencyBoundary(numericRightFrequencyBoundary, minFrequency, maxFrequency);
             if (numericRightFrequencyBoundary.Value == null)
                 numericRightFrequencyBoundary.Value = maxFrequency;
+            numericResonanceFrequency.IsReadOnly = false;
             numericResonanceFrequency.Value = null;
+            numericResonanceFrequency.Maximum = maxFrequency;
+            numericResonanceFrequency.Minimum = minFrequency;
             return true;
         }
 
@@ -81,10 +89,11 @@ namespace GenCalc
             PairDouble levelsBoundaries = new PairDouble((double)numericLeftLevelsBoundary.Value, (double)numericRightLevelsBoundary.Value);
             int numLevels = (int)numericLevelsNumber.Value;
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
-            mResponseCharacteristics = new ResponseCharacteristics(mSelectedSignal, ref frequencyBoundaries, ref levelsBoundaries, numLevels, numInterpolationPoints);
+            mResponseCharacteristics = new ResponseCharacteristics(mSelectedSignal, ref frequencyBoundaries, ref levelsBoundaries, numLevels, numInterpolationPoints, numericResonanceFrequency.Value);
             // Set signal data to plot
             foreach (AbstractSignalGraphModel model in mSignalGraphModels)
-                model.setData(mSelectedSignal, frequencyBoundaries, levelsBoundaries);
+                model.setData(mSelectedSignal, frequencyBoundaries, levelsBoundaries, mResponseCharacteristics.ResonanceFrequency);
+            mHodographGraphModel.setData(mSelectedSignal, mResponseCharacteristics.ResonanceRealPeak, mResponseCharacteristics.ResonanceImaginaryPeak);
             // Set results
             mDecrementGraphModel.setData(mResponseCharacteristics.Decrement);
             // Correct input parameters
@@ -92,14 +101,14 @@ namespace GenCalc
             numericRightFrequencyBoundary.Value = frequencyBoundaries.Item2;
             numericLeftLevelsBoundary.Value = levelsBoundaries.Item1;
             numericRightLevelsBoundary.Value = levelsBoundaries.Item2;
-            if (numericResonanceFrequency.Value == null)
-                numericResonanceFrequency.Value = mResponseCharacteristics.ResonanceFrequency;
+            numericResonanceFrequency.Value = mResponseCharacteristics.ResonanceFrequency;
         }
 
-        public void plotSignals()
+        public void plotInput()
         {
-            foreach (AbstractGraphModel model in mSignalGraphModels)
+            foreach (AbstractSignalGraphModel model in mSignalGraphModels)
                 model.plot();
+            mHodographGraphModel.plot();
         }
 
         public void plotResults()
@@ -112,7 +121,7 @@ namespace GenCalc
             if (mSelectedSignal == null)
                 return;
             calculateCharacteristics();
-            plotSignals();
+            plotInput();
             plotResults();
         }
 
@@ -131,5 +140,6 @@ namespace GenCalc
         private ResponseCharacteristics mResponseCharacteristics = null;
         private List<AbstractSignalGraphModel> mSignalGraphModels;
         private DecrementGraphModel mDecrementGraphModel;
+        private HodographGraphModel mHodographGraphModel;
     }
 }

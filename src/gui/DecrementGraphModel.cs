@@ -8,7 +8,7 @@ namespace GenCalc.Gui.Plot
     {
         public DecrementGraphModel(in WpfPlot graph) : base(graph)
         {
-            mGraph.plt.Legend(location: legendLocation.upperRight);
+            mGraph.plt.Legend(location: legendLocation.upperLeft);
             mGraph.plt.XLabel("Level");
             mGraph.plt.YLabel("Logarithmic Decrement");
         }
@@ -53,6 +53,6 @@ namespace GenCalc.Gui.Plot
             }
         }
 
-        protected DecrementData mData = null;
+        private DecrementData mData = null;
     }
 }

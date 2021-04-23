@@ -114,8 +114,9 @@
     <Compile Include="src\core\LMSProject.cs" />
     <Compile Include="src\core\Response.cs" />
     <Compile Include="src\gui\AbstractGraphModel.cs" />
-    <Compile Include="src\gui\AbstractSignalGraphModel.cs" />
-    <Compile Include="src\gui\AbstractDecrementGraphModel.cs" />
+    <Compile Include="src\gui\HodographGraphModel.cs" />
+    <Compile Include="src\gui\SignalGraphModel.cs" />
+    <Compile Include="src\gui\DecrementGraphModel.cs" />
     <Compile Include="src\gui\MainWindow.Interaction.cs" />
     <Compile Include="src\main\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>

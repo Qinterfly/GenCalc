@@ -43,7 +43,7 @@ namespace Tests
                 window.openProject(filePath);
                 window.selectSignal(signalPath);
                 window.calculateCharacteristics();
-                window.plotSignals();
+                window.plotInput();
                 window.Closed += (s, e) => window.Dispatcher.InvokeShutdown();
                 window.Show();
                 System.Windows.Threading.Dispatcher.Run();

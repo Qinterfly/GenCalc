@@ -18,7 +18,8 @@ namespace GenCalc.Core.Numerical
                                        ref PairDouble frequencyBoundaries,
                                        ref PairDouble levelsBoundaries,
                                        int numLevels,
-                                       int numInterpolationPoints = 512)
+                                       int numInterpolationPoints = 512,
+                                       double? manualResonanceFrequency = null)
         {
             // Correct limits of levels and frequencies
             if (!correctFrequencyBoundaries(response, ref frequencyBoundaries))
@@ -38,8 +39,18 @@ namespace GenCalc.Core.Numerical
                 Levels[i] = startLevel + i * stepLevel;
             // Calculate decrements
             Decrement = new DecrementData();
-            ResonanceFrequency = response.getFrequencyValue();
-            ResonanceFrequency = retrieveImagResonanceFrequency(splineImagPart, frequencyBoundaries, numInterpolationPoints, ResonanceFrequency);
+            if (manualResonanceFrequency == null) 
+            { 
+                ResonanceFrequency = response.getFrequencyValue();
+                ResonanceFrequency = retrieveImagResonanceFrequency(splineImagPart, frequencyBoundaries, numInterpolationPoints, ResonanceFrequency);
+            }
+            else
+            {
+                ResonanceFrequency = (double)manualResonanceFrequency;
+            }
+            ResonanceRealPeak = splineRealPart.Interpolate(ResonanceFrequency);
+            ResonanceImaginaryPeak = splineImagPart.Interpolate(ResonanceFrequency);
+            ResonanceAmplitudePeak = splineAmplitude.Interpolate(ResonanceFrequency);
             calculateDecrement(DecrementType.kImaginary, splineImagPart, frequencyBoundaries, numInterpolationPoints);
             calculateDecrement(DecrementType.kAmplitude, splineAmplitude, frequencyBoundaries, numInterpolationPoints);
         }
@@ -85,24 +96,26 @@ namespace GenCalc.Core.Numerical
             double endFrequency = frequencyBoundaries.Item2;
             double leftFrequency = startFrequency;
             double rightFrequency = endFrequency;
-            PairDouble minMax = Utilities.findSplineMinMax(spline, startFrequency, endFrequency, numInterpolationPoints);
-            double minValue = minMax.Item1;
-            double levelsInterval = minMax.Item2 - minValue;
             double targetValue;
-            double resonancePeak = spline.Interpolate(ResonanceFrequency);
+            double resonancePeak;
             int numLevels = Levels.Length;
             switch (type)
             {
                 case DecrementType.kImaginary:
                     Decrement.Imaginary = new Dictionary<double, double>();
+                    resonancePeak = ResonanceImaginaryPeak;
                     break;
                 case DecrementType.kAmplitude:
                     Decrement.Amplitude = new Dictionary<double, double>();
+                    resonancePeak = ResonanceAmplitudePeak;
+                    break;
+                default:
+                    resonancePeak = spline.Interpolate(ResonanceFrequency);
                     break;
             }
             for (int iLevel = 0; iLevel != numLevels; ++iLevel)
             {
-                targetValue = Levels[iLevel] * levelsInterval + minValue;
+                targetValue = Levels[iLevel] * resonancePeak;
                 Func<double, double> fun = x => spline.Interpolate(x) - targetValue;
                 Func<double, double> diffFun = x => spline.Differentiate(x);
                 List<double> roots = Utilities.findAllRootsBisection(fun, startFrequency, endFrequency, numInterpolationPoints);
@@ -166,6 +179,9 @@ namespace GenCalc.Core.Numerical
         public readonly DecrementData Decrement;
         public readonly ModalCharateristics ModalData;
         public readonly double ResonanceFrequency;
+        public readonly double ResonanceRealPeak;
+        public readonly double ResonanceImaginaryPeak;
+        public readonly double ResonanceAmplitudePeak;
     }
 
     public class ModalCharateristics
