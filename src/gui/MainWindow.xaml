@@ -143,6 +143,7 @@
                     <Grid x:Name="gridOutput" Margin="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -153,6 +154,8 @@
                         <mah:NumericUpDown x:Name="numericResonanceFrequency" Grid.Row="0" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" IsReadOnly="True"
                                            Minimum="0" Interval="0.05" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="baseNumericChanged" LostFocus="baseNumericChanged"/>
+                        <Label x:Name="labelRealDecrement" Grid.Row="1" Grid.Column="0" Content="Decrement by real part:" Margin="0" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <mah:NumericUpDown x:Name="numericRealDecrement" Grid.Row="1" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" StringFormat="F5" IsReadOnly="True" HideUpDownButtons="True"/>
                     </Grid>
                 </GroupBox>
             </Grid>

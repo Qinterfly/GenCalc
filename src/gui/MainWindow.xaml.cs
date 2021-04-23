@@ -66,10 +66,13 @@ namespace GenCalc
             setFrequencyBoundary(numericRightFrequencyBoundary, minFrequency, maxFrequency);
             if (numericRightFrequencyBoundary.Value == null)
                 numericRightFrequencyBoundary.Value = maxFrequency;
+            // Resonance frequency
             numericResonanceFrequency.IsReadOnly = false;
             numericResonanceFrequency.Value = null;
             numericResonanceFrequency.Maximum = maxFrequency;
             numericResonanceFrequency.Minimum = minFrequency;
+            // Decrement by real part
+            numericRealDecrement.Value = null;
             return true;
         }
 
@@ -102,6 +105,7 @@ namespace GenCalc
             numericLeftLevelsBoundary.Value = levelsBoundaries.Item1;
             numericRightLevelsBoundary.Value = levelsBoundaries.Item2;
             numericResonanceFrequency.Value = mResponseCharacteristics.ResonanceFrequency;
+            numericRealDecrement.Value = mResponseCharacteristics.Decrement.Real;
         }
 
         public void plotInput()

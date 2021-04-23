@@ -53,6 +53,7 @@ namespace GenCalc.Core.Numerical
             ResonanceAmplitudePeak = splineAmplitude.Interpolate(ResonanceFrequency);
             calculateDecrement(DecrementType.kImaginary, splineImagPart, frequencyBoundaries, numInterpolationPoints);
             calculateDecrement(DecrementType.kAmplitude, splineAmplitude, frequencyBoundaries, numInterpolationPoints);
+            calculateRealDecrement(splineRealPart, frequencyBoundaries, numInterpolationPoints);
         }
 
         private bool correctFrequencyBoundaries(in Response response, ref Tuple<double, double> boundaries)
@@ -152,6 +153,21 @@ namespace GenCalc.Core.Numerical
             }
         }
 
+        private void calculateRealDecrement(CubicSpline spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
+        {
+            double startFrequency = frequencyBoundaries.Item1;
+            double endFrequency = frequencyBoundaries.Item2;
+            Func<double, double> fun = x => spline.Differentiate(x);
+            Func<double, double> diffFun = x => spline.Differentiate2(x);
+            List<double> roots = Utilities.findAllRootsBisection(fun, startFrequency, endFrequency, numInterpolationPoints);
+            int numRoots = roots.Count;
+            int leftIndex = 0;
+            int rightIndex = numRoots - 1;
+            double leftFrequnecy = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
+            double rightFrequnecy = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
+            Decrement.Real = Math.PI * (rightFrequnecy - leftFrequnecy) / ResonanceFrequency;
+        }
+
         private double retrieveImagResonanceFrequency(CubicSpline splineImag, in PairDouble frequencyBoundaries, int numPoints, double approximation)
         {
             Func<double, double> resonanceFunc = x => splineImag.Differentiate(x);
@@ -195,5 +211,6 @@ namespace GenCalc.Core.Numerical
     {
         public Dictionary<double, double> Imaginary;
         public Dictionary<double, double> Amplitude;
+        public double Real;
     }
 }
