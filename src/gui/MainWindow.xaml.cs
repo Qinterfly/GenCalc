@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Windows;
 using System.Collections.Generic;
-using Microsoft.Win32;
 using MahApps.Metro.Controls;
 using GenCalc.Core.Project;
 using GenCalc.Core.Numerical;
@@ -17,13 +15,22 @@ namespace GenCalc
         {
             InitializeComponent();
             initializeGraphs();
+            setGraphEvents();
         }
 
         private void initializeGraphs()
         {
             mSignalGraphModels = new List<AbstractSignalGraphModel>();
             mSignalGraphModels.Add(new ImaginaryPartGraphModel(graphImaginaryPart));
+            mSignalGraphModels.Add(new RealPartGraphModel(graphRealPart));
+            mSignalGraphModels.Add(new AmplitudeGraphModel(graphAmplitude));
             mDecrementGraphModel = new DecrementGraphModel(graphDecrement);
+        }
+
+        private void setGraphEvents()
+        {
+            foreach (AbstractSignalGraphModel model in mSignalGraphModels)
+                model.FrequencyBoundariesEvent += frequencyBoundariesChanged;
         }
 
         public void openProject(string filePath)
@@ -56,38 +63,6 @@ namespace GenCalc
                 numericRightFrequencyBoundary.Value = maxFrequency;
             numericResonanceFrequency.Value = null;
             return true;
-        }
-
-        private void buttonOpenProject_Click(object sender, RoutedEventArgs e)
-        {
-            clearStatus();
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "LMS Test.Lab 15A Project (*.lms)|*.lms";
-            openFileDialog.FilterIndex = 1;
-            openFileDialog.RestoreDirectory = true;
-            if (openFileDialog.ShowDialog() == true)
-            {
-                openProject(openFileDialog.FileName);
-                setStatus("The project was successfuly opened");
-            }
-            else
-            {
-                setStatus("An error occured while choosing a project file");
-                return;
-            }
-        }
-
-        private void buttonSelectSignal_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectSignal())
-            {
-                calculateAndPlot();
-                setStatus("The signal was selected via TestLab");
-            }
-            else
-            {
-                setStatus("An error occured while selecting the signal");
-            }
         }
 
         private void setFrequencyBoundary(NumericUpDown numericControl, double minValue, double maxValue)
@@ -132,7 +107,7 @@ namespace GenCalc
             mDecrementGraphModel.plot();
         }
 
-        public void calculateAndPlot(object sender = null, RoutedPropertyChangedEventArgs<double?> e = null)
+        public void calculateAndPlot()
         {
             if (mSelectedSignal == null)
                 return;

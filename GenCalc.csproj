@@ -116,6 +116,7 @@
     <Compile Include="src\gui\AbstractGraphModel.cs" />
     <Compile Include="src\gui\AbstractSignalGraphModel.cs" />
     <Compile Include="src\gui\AbstractDecrementGraphModel.cs" />
+    <Compile Include="src\gui\MainWindow.Interaction.cs" />
     <Compile Include="src\main\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>

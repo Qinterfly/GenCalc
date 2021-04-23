@@ -30,12 +30,12 @@ namespace GenCalc.Gui.Plot
             const int kLineWidth = 2;
             const int kMarkerSize = 5;
             mGraph.plt.Clear();
-            double[] X;
-            double[] Y;
-            dataToVectors(mData.Imaginary, out X, out Y);
-            mGraph.plt.PlotScatter(X, Y, lineWidth: kLineWidth, markerSize: kMarkerSize, label: "Imaginary");
-            dataToVectors(mData.Amplitude, out X, out Y);
-            mGraph.plt.PlotScatter(X, Y, lineWidth: kLineWidth, markerSize: kMarkerSize, label: "Amplitude");
+            dataToVectors(mData.Imaginary, out double[] XImag, out double[] YImag);
+            if (XImag.Length > 0 && YImag.Length > 0)
+                mGraph.plt.PlotScatter(XImag, YImag, lineWidth: kLineWidth, markerSize: kMarkerSize, label: "Imaginary");
+            dataToVectors(mData.Amplitude, out double[] XAmp, out double[] YAmp);
+            if (XAmp.Length > 0 && YAmp.Length > 0)
+                mGraph.plt.PlotScatter(XAmp, YAmp, lineWidth: kLineWidth, markerSize: kMarkerSize, label: "Amplitude");
             mGraph.Render(lowQuality: false);
         }
 
