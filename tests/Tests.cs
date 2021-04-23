@@ -41,9 +41,8 @@ namespace Tests
                 var window = new MainWindow();
                 string filePath = Path.GetFullPath(baseDirectory + "/" + projectName);
                 window.openProject(filePath);
-                window.selectSignal(signalPath);
-                window.calculateCharacteristics();
-                window.plotInput();
+                window.selectAcceleration(signalPath);
+                window.calculateAndPlot();
                 window.Closed += (s, e) => window.Dispatcher.InvokeShutdown();
                 window.Show();
                 System.Windows.Threading.Dispatcher.Run();
@@ -57,6 +56,6 @@ namespace Tests
         public static string projectName = "Mitten.lms";
         public static string signalPath = "Section 2/Отч 6,9 СГИКр1 21,55Гц/ResponsesSpectra/Harmonic Spectrum W:56:+X";
         public static LMSProject mProject = null;
-        public static Response mSelectedSignal = null;
+        public static Response mSelectedAcceleration = null;
     }
 }

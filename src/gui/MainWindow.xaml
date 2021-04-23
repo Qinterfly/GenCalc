@@ -7,7 +7,7 @@
         xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:GenCalc"
         mc:Ignorable="d"
-        Title="GenCalc  " Height="700" Width="800" WindowStartupLocation="CenterScreen" FontSize="11">
+        Title="GenCalc  " Height="700" Width="800" WindowStartupLocation="CenterScreen" FontSize="11" Icon="/GenCalc;component/resources/wave.png">
     <DockPanel x:Name="mainPanel" Margin="0">
         <StatusBar x:Name="statusBar" Height="22" VerticalAlignment="Top" DockPanel.Dock="Bottom" Margin="0,0,0,0">
             <StatusBarItem>
@@ -50,6 +50,11 @@
                             <WpfPlot x:Name="graphHodograph" Margin="0"/>
                         </Grid>
                     </TabItem>
+                    <TabItem x:Name="tabItemGraphMonophase" Header="Monophase">
+                        <Grid x:Name="gridGraphMonophase" Margin="0">
+                            <WpfPlot x:Name="graphMonophase" Margin="0"/>
+                        </Grid>
+                    </TabItem>
                 </TabControl>
                 <GridSplitter x:Name="graphGridSplitter" HorizontalAlignment="Stretch" ShowsPreview="False" Height="2" Grid.Row="1" VerticalAlignment="Center" Background="#FFDADADA"/>
                 <TabControl x:Name="tabOutputGraphs" Margin="5" Grid.Row="2" mah:HeaderedControlHelper.HeaderFontSize="15" Style="{DynamicResource MahApps.Styles.TabControl.AnimatedSingleRow}">
@@ -80,11 +85,14 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Label x:Name="labelPathProject" Content="Path: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" Height="24.63" Width="37.44" FontWeight="Normal"/>
-                        <Label x:Name="labelSelectedSignal" Content="Signal:" HorizontalAlignment="Left" Margin="0" Grid.Row="1" VerticalAlignment="Center" FontWeight="Normal" Height="24.63" Width="41.853"/>
+                        <Label x:Name="labelPathProject" Content="Path: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
+                        <Label x:Name="labelSelectedAcceleration" Content="Accel:" HorizontalAlignment="Left" Margin="0" Grid.Row="1" VerticalAlignment="Center" FontWeight="Normal" />
+                        <Label x:Name="labelSelectedForce" Content="Force:" HorizontalAlignment="Left" Margin="0,5,0,0" Grid.Row="2" VerticalAlignment="Center" FontWeight="Normal" />
                         <TextBox x:Name="textBoxProjectPath" Grid.Column="1" Margin="5,0,5,5" TextWrapping="Wrap" FontWeight="Normal" VerticalAlignment="Center" IsReadOnly="True"/>
-                        <TextBox x:Name="textBoxSelectedSignal" Grid.Column="1" Margin="5,0" Grid.Row="1" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True" />
+                        <TextBox x:Name="textBoxSelectedAcceleration" Grid.Column="1" Margin="5,0" Grid.Row="1" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True" />
+                        <TextBox x:Name="textBoxSelectedForce" Grid.Column="1" Margin="5,5,5,0" Grid.Row="2" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True" />
                         <Button x:Name="buttonOpenProject" Grid.Column="2" Margin="0,0,0,5" VerticalAlignment="Center" HorizontalAlignment="Center" Click="buttonOpenProject_Click">
                             <StackPanel Width="14" Height="14">
                                 <StackPanel.Background>
@@ -92,7 +100,14 @@
                                 </StackPanel.Background>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="buttonSelectSignal" Grid.Column="2" HorizontalAlignment="Center" Margin="0" Grid.Row="1" VerticalAlignment="Center" Click="buttonSelectSignal_Click">
+                        <Button x:Name="buttonSelectAcceleration" Grid.Column="2" HorizontalAlignment="Center" Margin="0" Grid.Row="1" VerticalAlignment="Center" Click="buttonSelectAcceleration_Click">
+                            <StackPanel Width="14" Height="14">
+                                <StackPanel.Background>
+                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/select.png"/>
+                                </StackPanel.Background>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="buttonSelectForce" Grid.Column="2" HorizontalAlignment="Center" Margin="0,5,0,0" Grid.Row="2" VerticalAlignment="Center" Click="buttonSelectForce_Click">
                             <StackPanel Width="14" Height="14">
                                 <StackPanel.Background>
                                     <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/select.png"/>
@@ -154,8 +169,8 @@
                         <mah:NumericUpDown x:Name="numericResonanceFrequency" Grid.Row="0" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" IsReadOnly="True"
                                            Minimum="0" Interval="0.05" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="baseNumericChanged" LostFocus="baseNumericChanged"/>
-                        <Label x:Name="labelRealDecrement" Grid.Row="1" Grid.Column="0" Content="Decrement by real part:" Margin="0" FontWeight="Normal" VerticalAlignment="Center"/>
-                        <mah:NumericUpDown x:Name="numericRealDecrement" Grid.Row="1" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" StringFormat="F5" IsReadOnly="True" HideUpDownButtons="True"/>
+                        <Label x:Name="labelDecrementByReal" Grid.Row="1" Grid.Column="0" Content="Decrement by real part:" Margin="0" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <mah:NumericUpDown x:Name="numericDecrementByReal" Grid.Row="1" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" StringFormat="F5" IsReadOnly="True" HideUpDownButtons="True"/>
                     </Grid>
                 </GroupBox>
             </Grid>

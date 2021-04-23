@@ -99,16 +99,29 @@ namespace GenCalc
             }
         }
 
-        private void buttonSelectSignal_Click(object sender, RoutedEventArgs e)
+        private void buttonSelectAcceleration_Click(object sender, RoutedEventArgs e)
         {
-            if (selectSignal())
+            if (selectAcceleration())
             {
                 calculateAndPlot();
-                setStatus("The signal was selected via TestLab");
+                setStatus("The acceleration signal was selected via TestLab");
             }
             else
             {
-                setStatus("An error occured while selecting the signal");
+                setStatus("An error occured while selecting the acceleration signal");
+            }
+        }
+
+        private void buttonSelectForce_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectForce())
+            {
+                calculateAndPlot();
+                setStatus("The force signal was selected via TestLab");
+            }
+            else
+            {
+                setStatus("An error occured while selecting the force signal");
             }
         }
 

@@ -20,11 +20,14 @@ namespace GenCalc
 
         private void initializeGraphs()
         {
+            // Input
             mSignalGraphModels = new List<AbstractSignalGraphModel>();
             mSignalGraphModels.Add(new ImaginaryPartGraphModel(graphImaginaryPart));
             mSignalGraphModels.Add(new RealPartGraphModel(graphRealPart));
             mSignalGraphModels.Add(new AmplitudeGraphModel(graphAmplitude));
             mHodographGraphModel = new HodographGraphModel(graphHodograph);
+            mMonophaseGraphModel = new MonophaseGraphModel(graphMonophase);
+            // Output
             mDecrementGraphModel = new DecrementGraphModel(graphDecrement);
         }
 
@@ -46,33 +49,48 @@ namespace GenCalc
             textBoxProjectPath.Text = filePath;
         }
 
-        public bool selectSignal(string pathSignal = null)
+        public bool selectAcceleration(string pathSignal = null)
         {
             if (mProject == null || !mProject.isOpened())
                 return false;
-            mSelectedSignal = mProject.retrieveSelectedSignal(pathSignal);
-            if (mSelectedSignal == null)
+            mSelectedAcceleration = null;
+            Response signal = mProject.retrieveSelectedSignal(pathSignal);
+            if (signal != null && signal.Type == ResponseType.kAccel)
+                mSelectedAcceleration = signal;
+            else
                 return false;
-            textBoxSelectedSignal.Text = mSelectedSignal.Name;
+            textBoxSelectedAcceleration.Text = mSelectedAcceleration.Name;
             // Set boundaries of levels and frequencies
-            PairDouble frequencyBoundaries = mSelectedSignal.getFrequencyBoundaries();
+            PairDouble frequencyBoundaries = mSelectedAcceleration.getFrequencyBoundaries();
             double minFrequency = frequencyBoundaries.Item1;
             double maxFrequency = frequencyBoundaries.Item2;
             // Left frequency correction
             setFrequencyBoundary(numericLeftFrequencyBoundary, minFrequency, maxFrequency);
-            if (numericLeftFrequencyBoundary.Value == null)
-                numericLeftFrequencyBoundary.Value = minFrequency;
+            numericLeftFrequencyBoundary.Value = minFrequency;
             // Right frequency correction
             setFrequencyBoundary(numericRightFrequencyBoundary, minFrequency, maxFrequency);
-            if (numericRightFrequencyBoundary.Value == null)
-                numericRightFrequencyBoundary.Value = maxFrequency;
+            numericRightFrequencyBoundary.Value = maxFrequency;
             // Resonance frequency
             numericResonanceFrequency.IsReadOnly = false;
             numericResonanceFrequency.Value = null;
             numericResonanceFrequency.Maximum = maxFrequency;
             numericResonanceFrequency.Minimum = minFrequency;
             // Decrement by real part
-            numericRealDecrement.Value = null;
+            numericDecrementByReal.Value = null;
+            return true;
+        }
+
+        public bool selectForce(string pathSignal = null)
+        {
+            if (mProject == null || !mProject.isOpened())
+                return false;
+            mSelectedForce = null;
+            Response signal = mProject.retrieveSelectedSignal(pathSignal);
+            if (signal != null && signal.Type == ResponseType.kForce)
+                mSelectedForce = signal;
+            else
+                return false;
+            textBoxSelectedForce.Text = mSelectedForce.Name;
             return true;
         }
 
@@ -92,11 +110,12 @@ namespace GenCalc
             PairDouble levelsBoundaries = new PairDouble((double)numericLeftLevelsBoundary.Value, (double)numericRightLevelsBoundary.Value);
             int numLevels = (int)numericLevelsNumber.Value;
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
-            mResponseCharacteristics = new ResponseCharacteristics(mSelectedSignal, ref frequencyBoundaries, ref levelsBoundaries, numLevels, numInterpolationPoints, numericResonanceFrequency.Value);
+            mResponseCharacteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries, numLevels, numInterpolationPoints, numericResonanceFrequency.Value);
             // Set signal data to plot
             foreach (AbstractSignalGraphModel model in mSignalGraphModels)
-                model.setData(mSelectedSignal, frequencyBoundaries, levelsBoundaries, mResponseCharacteristics.ResonanceFrequency);
-            mHodographGraphModel.setData(mSelectedSignal, mResponseCharacteristics.ResonanceRealPeak, mResponseCharacteristics.ResonanceImaginaryPeak);
+                model.setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mResponseCharacteristics.ResonanceFrequency);
+            mHodographGraphModel.setData(mSelectedAcceleration, mResponseCharacteristics.ResonanceRealPeak, mResponseCharacteristics.ResonanceImaginaryPeak);
+            mMonophaseGraphModel.setData(mSelectedAcceleration);
             // Set results
             mDecrementGraphModel.setData(mResponseCharacteristics.Decrement);
             // Correct input parameters
@@ -104,8 +123,13 @@ namespace GenCalc
             numericRightFrequencyBoundary.Value = frequencyBoundaries.Item2;
             numericLeftLevelsBoundary.Value = levelsBoundaries.Item1;
             numericRightLevelsBoundary.Value = levelsBoundaries.Item2;
-            numericResonanceFrequency.Value = mResponseCharacteristics.ResonanceFrequency;
-            numericRealDecrement.Value = mResponseCharacteristics.Decrement.Real;
+            if (mResponseCharacteristics.ResonanceFrequency > 0)
+                numericResonanceFrequency.Value = mResponseCharacteristics.ResonanceFrequency;
+            if (mResponseCharacteristics.Decrement != null)
+            { 
+                if (mResponseCharacteristics.Decrement.Real > 0)
+                    numericDecrementByReal.Value = mResponseCharacteristics.Decrement.Real;
+            }
         }
 
         public void plotInput()
@@ -113,6 +137,7 @@ namespace GenCalc
             foreach (AbstractSignalGraphModel model in mSignalGraphModels)
                 model.plot();
             mHodographGraphModel.plot();
+            mMonophaseGraphModel.plot();
         }
 
         public void plotResults()
@@ -122,7 +147,7 @@ namespace GenCalc
 
         public void calculateAndPlot()
         {
-            if (mSelectedSignal == null)
+            if (mSelectedAcceleration == null)
                 return;
             calculateCharacteristics();
             plotInput();
@@ -140,10 +165,12 @@ namespace GenCalc
         }
 
         private LMSProject mProject = null;
-        private Response mSelectedSignal = null;
+        private Response mSelectedAcceleration = null;
+        private Response mSelectedForce = null;
         private ResponseCharacteristics mResponseCharacteristics = null;
         private List<AbstractSignalGraphModel> mSignalGraphModels;
         private DecrementGraphModel mDecrementGraphModel;
         private HodographGraphModel mHodographGraphModel;
+        private MonophaseGraphModel mMonophaseGraphModel;
     }
 }

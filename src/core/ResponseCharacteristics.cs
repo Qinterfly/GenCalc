@@ -161,6 +161,11 @@ namespace GenCalc.Core.Numerical
             Func<double, double> diffFun = x => spline.Differentiate2(x);
             List<double> roots = Utilities.findAllRootsBisection(fun, startFrequency, endFrequency, numInterpolationPoints);
             int numRoots = roots.Count;
+            if (numRoots < 2)
+            {
+                Decrement.Real = -1.0;
+                return;
+            }
             int leftIndex = 0;
             int rightIndex = numRoots - 1;
             double leftFrequnecy = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);

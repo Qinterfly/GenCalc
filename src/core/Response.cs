@@ -3,12 +3,22 @@ using System.Globalization;
 
 namespace GenCalc.Core.Numerical
 {
+    public enum ResponseType
+    {
+        kUnknown,
+        kAccel,
+        kForce
+    }
+
     public class Response
     {
-        public Response(in string path, in string name, in double[] frequency, in double[] realPart, in double[] imaginaryPart)
+        public Response(ResponseType type, in string path, in string name, in string originalRun, 
+                        in double[] frequency, in double[] realPart, in double[] imaginaryPart)
         {
+            Type = type;
             Path = path;
             Name = name;
+            OriginalRun = originalRun;
             Frequency = frequency;
             RealPart = realPart;
             ImaginaryPart = imaginaryPart;
@@ -65,7 +75,9 @@ namespace GenCalc.Core.Numerical
         public readonly double[] ImaginaryPart;
         public readonly double[] Amplitude;
         // Info
+        public readonly ResponseType Type;
         public readonly string Name;
         public readonly string Path;
+        public readonly string OriginalRun;
     }
 }

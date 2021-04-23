@@ -31,10 +31,10 @@ namespace GenCalc.Gui.Plot
             const int kMarkerSize = 5;
             mGraph.plt.Clear();
             dataToVectors(mData.Imaginary, out double[] XImag, out double[] YImag);
-            if (XImag.Length > 0 && YImag.Length > 0)
+            if (XImag.Length > 1 && YImag.Length > 1)
                 mGraph.plt.PlotScatter(XImag, YImag, lineWidth: kLineWidth, markerSize: kMarkerSize, label: "Imaginary");
             dataToVectors(mData.Amplitude, out double[] XAmp, out double[] YAmp);
-            if (XAmp.Length > 0 && YAmp.Length > 0)
+            if (XAmp.Length > 1 && YAmp.Length > 1)
                 mGraph.plt.PlotScatter(XAmp, YAmp, lineWidth: kLineWidth, markerSize: kMarkerSize, label: "Amplitude");
             mGraph.Render(lowQuality: false);
         }

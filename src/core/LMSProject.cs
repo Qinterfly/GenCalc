@@ -58,9 +58,7 @@ namespace GenCalc.Core.Project
                 if (signal == null)
                     return null;
                 AttributeMap properties = signal.Properties;
-                string measuredQuantity = properties["Measured quantity"];
-                if (measuredQuantity.Equals("Acceleration"))
-                    selectedSignal = retrieveAcceleration(pathSignal, signal, properties);
+                selectedSignal = acquireResponse(pathSignal, signal, properties);
             }
             catch
             {
@@ -69,8 +67,20 @@ namespace GenCalc.Core.Project
             return selectedSignal;
         }
 
-        private Response retrieveAcceleration(in string path, in IBlock2 signal, in AttributeMap properties)
+        private Response acquireResponse(in string path, in IBlock2 signal, in AttributeMap properties)
         {
+            ResponseType type = ResponseType.kUnknown;
+            string measuredQuantity = properties["Measured quantity"];
+            if (measuredQuantity.Equals("Acceleration"))
+            {
+                type = ResponseType.kAccel;
+            }
+            else if (measuredQuantity.Equals("Force"))
+            {
+                type = ResponseType.kForce;
+            }
+            if (type == ResponseType.kUnknown)
+                return null;
             double[] frequency = (double[])signal.XValues;
             double[,] data = (double[,])signal.YValues; // Units: m/s^2 or (m/s^2)/N 
             // Retrieving additional info
@@ -80,13 +90,14 @@ namespace GenCalc.Core.Project
             // Normalizing signals
             int nResponse = data.GetLength(0);
             double[] realPart = new double[nResponse];
-            double[] imaginaryPath = new double[nResponse];
+            double[] imaginaryPart = new double[nResponse];
             for (int k = 0; k != nResponse; ++k)
             {
                 realPart[k]      = data[k, 0] * sign;
-                imaginaryPath[k] = data[k, 1] * sign * (-1.0);
+                imaginaryPart[k] = data[k, 1] * sign * (-1.0);
             }
-            Response currentResponse = new Response(path, signal.Label, frequency, realPart, imaginaryPath);
+            string originalRun = properties["Original run"].AttributeMap["Contents"];
+            Response currentResponse = new Response(type, path, signal.Label, originalRun, frequency, realPart, imaginaryPart);
             return currentResponse;
         }
 
