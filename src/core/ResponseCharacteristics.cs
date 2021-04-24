@@ -14,22 +14,22 @@ namespace GenCalc.Core.Numerical
 
     public class ResponseCharacteristics
     {
-        public ResponseCharacteristics(in Response response,
-                                       ref PairDouble frequencyBoundaries,
-                                       ref PairDouble levelsBoundaries,
-                                       int numLevels,
-                                       int numInterpolationPoints = 512,
+        public ResponseCharacteristics(in Response acceleration, in Response force,
+                                       ref PairDouble frequencyBoundaries, ref PairDouble levelsBoundaries,
+                                       int numLevels, int numInterpolationPoints = 512,
                                        double? manualResonanceFrequency = null)
         {
+            if (acceleration == null)
+                return;
             // Correct limits of levels and frequencies
-            if (!correctFrequencyBoundaries(response, ref frequencyBoundaries))
+            if (!correctFrequencyBoundaries(acceleration, ref frequencyBoundaries))
                 return;
             correctLevelsBoundaries(ref levelsBoundaries);
             // Interpolate the response
-            double[] frequency = response.Frequency;
-            CubicSpline splineRealPart = CubicSpline.InterpolateNatural(frequency, response.RealPart);
-            CubicSpline splineImagPart = CubicSpline.InterpolateNatural(frequency, response.ImaginaryPart);
-            CubicSpline splineAmplitude = CubicSpline.InterpolateNatural(frequency, response.Amplitude);
+            double[] frequency = acceleration.Frequency;
+            CubicSpline splineRealAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.RealPart);
+            CubicSpline splineImagAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.ImaginaryPart);
+            CubicSpline splineAmplitudeAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.Amplitude);
             // Create mesh of levels
             double startLevel = levelsBoundaries.Item1;
             double endLevel = levelsBoundaries.Item2;
@@ -41,22 +41,30 @@ namespace GenCalc.Core.Numerical
             Decrement = new DecrementData();
             if (manualResonanceFrequency == null) 
             { 
-                ResonanceFrequency = response.getFrequencyValue();
-                ResonanceFrequency = retrieveImagResonanceFrequency(splineImagPart, frequencyBoundaries, numInterpolationPoints, ResonanceFrequency);
+                ResonanceFrequency = acceleration.getFrequencyValue();
+                ResonanceFrequency = retrieveImagResonanceFrequency(splineImagAcceleration, frequencyBoundaries, numInterpolationPoints, ResonanceFrequency);
             }
             else
             {
                 ResonanceFrequency = (double)manualResonanceFrequency;
             }
-            ResonanceRealPeak = splineRealPart.Interpolate(ResonanceFrequency);
-            ResonanceImaginaryPeak = splineImagPart.Interpolate(ResonanceFrequency);
-            ResonanceAmplitudePeak = splineAmplitude.Interpolate(ResonanceFrequency);
-            calculateDecrement(DecrementType.kImaginary, splineImagPart, frequencyBoundaries, numInterpolationPoints);
-            calculateDecrement(DecrementType.kAmplitude, splineAmplitude, frequencyBoundaries, numInterpolationPoints);
-            calculateRealDecrement(splineRealPart, frequencyBoundaries, numInterpolationPoints);
+            ResonanceRealPeak = splineRealAcceleration.Interpolate(ResonanceFrequency);
+            ResonanceImaginaryPeak = splineImagAcceleration.Interpolate(ResonanceFrequency);
+            ResonanceAmplitudePeak = splineAmplitudeAcceleration.Interpolate(ResonanceFrequency);
+            // Decrements
+            calculateDecrement(DecrementType.kImaginary, splineImagAcceleration, frequencyBoundaries, numInterpolationPoints);
+            calculateDecrement(DecrementType.kAmplitude, splineAmplitudeAcceleration, frequencyBoundaries, numInterpolationPoints);
+            calculateDecrementByReal(splineRealAcceleration, frequencyBoundaries, numInterpolationPoints);
+            // Modal data
+            if (force != null)
+            {
+                Modal = new ModalData();
+                CubicSpline splineAmplitudeForce = CubicSpline.InterpolateNatural(frequency, force.Amplitude);
+                calculateModal(splineAmplitudeAcceleration, splineAmplitudeForce, frequencyBoundaries, numInterpolationPoints);
+            }
         }
 
-        private bool correctFrequencyBoundaries(in Response response, ref Tuple<double, double> boundaries)
+        private bool correctFrequencyBoundaries(in Response response, ref PairDouble boundaries)
         {
             int numResponse = response.RealPart.Length;
             double startFrequency = response.Frequency[0];
@@ -89,6 +97,29 @@ namespace GenCalc.Core.Numerical
                 resMax = tempValue;
             }
             levelsBoundaries = new PairDouble(resMin, resMax);
+        }
+
+        private double retrieveImagResonanceFrequency(CubicSpline splineImag, in PairDouble frequencyBoundaries, int numPoints, double approximation)
+        {
+            Func<double, double> resonanceFunc = x => splineImag.Differentiate(x);
+            Func<double, double> resonanceDiffFunc = x => splineImag.Differentiate2(x);
+            List<double> resFrequencies = Utilities.findAllRootsBisection(resonanceFunc, frequencyBoundaries.Item1, frequencyBoundaries.Item2, numPoints);
+            double distance;
+            double minDistance = Double.MaxValue;
+            int indClosestResonance = 0;
+            int numFrequencies = resFrequencies.Count;
+            for (int i = 0; i != numFrequencies; ++i)
+            {
+                resFrequencies[i] = NewtonRaphson.FindRootNearGuess(resonanceFunc, resonanceDiffFunc, resFrequencies[i], frequencyBoundaries.Item1, frequencyBoundaries.Item2);
+                distance = Math.Abs(resFrequencies[i] - approximation);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    indClosestResonance = i;
+                }
+
+            }
+            return resFrequencies[indClosestResonance];
         }
 
         private void calculateDecrement(DecrementType type, CubicSpline spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
@@ -153,7 +184,7 @@ namespace GenCalc.Core.Numerical
             }
         }
 
-        private void calculateRealDecrement(CubicSpline spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
+        private void calculateDecrementByReal(CubicSpline spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
@@ -168,44 +199,30 @@ namespace GenCalc.Core.Numerical
             }
             int leftIndex = 0;
             int rightIndex = numRoots - 1;
-            double leftFrequnecy = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
-            double rightFrequnecy = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
-            Decrement.Real = Math.PI * (rightFrequnecy - leftFrequnecy) / ResonanceFrequency;
+            double leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
+            double rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
+            Decrement.Real = Math.PI * (rightFrequency - leftFrequency) / ResonanceFrequency;
         }
 
-        private double retrieveImagResonanceFrequency(CubicSpline splineImag, in PairDouble frequencyBoundaries, int numPoints, double approximation)
+        private void calculateModal(in CubicSpline acceleration, in CubicSpline force, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
-            Func<double, double> resonanceFunc = x => splineImag.Differentiate(x);
-            Func<double, double> resonanceDiffFunc = x => splineImag.Differentiate2(x);
-            List<double> resFrequencies = Utilities.findAllRootsBisection(resonanceFunc, frequencyBoundaries.Item1, frequencyBoundaries.Item2, numPoints);
-            double distance;
-            double minDistance = Double.MaxValue;
-            int indClosestResonance = 0;
-            int numFrequencies = resFrequencies.Count;
-            for (int i = 0; i != numFrequencies; ++i)
+            int numLevels = Levels.Length;
+            for (int iLevel = 0; iLevel != numLevels; ++iLevel)
             {
-                resFrequencies[i] = NewtonRaphson.FindRootNearGuess(resonanceFunc, resonanceDiffFunc, resFrequencies[i], frequencyBoundaries.Item1, frequencyBoundaries.Item2);
-                distance = Math.Abs(resFrequencies[i] - approximation);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    indClosestResonance = i;
-                }
-
+                // TODO
             }
-            return resFrequencies[indClosestResonance];
         }
 
         public readonly double[] Levels;
         public readonly DecrementData Decrement;
-        public readonly ModalCharateristics ModalData;
+        public readonly ModalData Modal;
         public readonly double ResonanceFrequency;
         public readonly double ResonanceRealPeak;
         public readonly double ResonanceImaginaryPeak;
         public readonly double ResonanceAmplitudePeak;
     }
 
-    public class ModalCharateristics
+    public class ModalData
     {
         public double[] mass;
         public double[] stiffness;

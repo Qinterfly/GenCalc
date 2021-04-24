@@ -87,8 +87,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Tests.cs" />
+    <Compile Include="TestsCore.cs" />
     <Compile Include="properties\AssemblyInfo.cs" />
+    <Compile Include="TestsApplication.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\packages.config" />

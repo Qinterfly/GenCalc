@@ -110,7 +110,7 @@ namespace GenCalc
             PairDouble levelsBoundaries = new PairDouble((double)numericLeftLevelsBoundary.Value, (double)numericRightLevelsBoundary.Value);
             int numLevels = (int)numericLevelsNumber.Value;
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
-            mResponseCharacteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries, numLevels, numInterpolationPoints, numericResonanceFrequency.Value);
+            mResponseCharacteristics = new ResponseCharacteristics(mSelectedAcceleration, mSelectedForce, ref frequencyBoundaries, ref levelsBoundaries, numLevels, numInterpolationPoints, numericResonanceFrequency.Value);
             // Set signal data to plot
             foreach (AbstractSignalGraphModel model in mSignalGraphModels)
                 model.setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mResponseCharacteristics.ResonanceFrequency);
