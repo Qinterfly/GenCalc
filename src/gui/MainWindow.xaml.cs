@@ -54,6 +54,8 @@ namespace GenCalc
 
         public void openProject(string filePath)
         {
+            if (mProject != null && mProject.isOpened())
+                clearAll();
             mProject = new LMSProject(filePath);
             if (!mProject.isOpened())
                 return;
@@ -171,8 +173,11 @@ namespace GenCalc
             PairDouble levelsBoundaries = new PairDouble((double)numericLeftLevelsBoundary.Value, (double)numericRightLevelsBoundary.Value);
             int numLevels = (int)numericLevelsNumber.Value;
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
-            if (mSelectedModalSet.Forces != null && mSelectedModalSet.Responses != null && mSelectedModalSet.ReferenceResponse == null)
-                mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
+            if (mSelectedModalSet != null)
+            {
+                if (mSelectedModalSet.Forces != null && mSelectedModalSet.Responses != null && mSelectedModalSet.ReferenceResponse == null)
+                    mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
+            }
             ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries, 
                                                                                   numLevels, numInterpolationPoints, numericResonanceFrequency.Value,
                                                                                   mSelectedModalSet);
@@ -196,6 +201,7 @@ namespace GenCalc
             numericRightLevelsBoundary.Value = levelsBoundaries.Item2;
             if (characteristics.ResonanceFrequency > 0)
                 numericResonanceFrequency.Value = characteristics.ResonanceFrequency;
+            numericDecrementByReal.Value = null;
             if (characteristics.Decrement != null)
             { 
                 if (characteristics.Decrement.Real > 0)
@@ -225,6 +231,47 @@ namespace GenCalc
             calculateCharacteristics();
             plotInput();
             plotResults();
+        }
+
+        public void clearAll()
+        {
+            // Fields
+            mProject = null;
+            mSelectedAcceleration = null;
+            mSelectedModalSet = null;
+            // Project
+            textBoxProjectPath.Text = "";
+            textBoxSelectedAcceleration.Text = "";
+            // Modal data
+            listBoxForces.Items.Clear();
+            listBoxResponses.Items.Clear();
+            textBoxReferenceResponse.Text = "";
+            // Calculation pararmeters
+            numericLeftFrequencyBoundary.Value = null;
+            numericRightFrequencyBoundary.Value = null;
+            // Output
+            numericDecrementByReal.Value = null;
+            numericResonanceFrequency.Value = null;
+            // Graphs
+            clearInput();
+            clearResults();
+        }
+
+        public void clearInput()
+        {
+
+            foreach (AbstractSignalGraphModel model in mSignalGraphModels)
+                model.clear();
+            mHodographGraphModel.clear();
+            mMonophaseGraphModel.clear();
+        }
+
+        public void clearResults()
+        {
+
+            mDecrementGraphModel.clear();
+            foreach (ModalGraphModel model in mModalGraphModels)
+                model.clear();
         }
 
         private void clearStatus()

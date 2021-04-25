@@ -110,6 +110,8 @@ namespace GenCalc.Core.Numerical
             Func<double, double> resonanceFunc = x => splineImag.Differentiate(x);
             Func<double, double> resonanceDiffFunc = x => splineImag.Differentiate2(x);
             List<double> resFrequencies = Utilities.findAllRootsBisection(resonanceFunc, frequencyBoundaries.Item1, frequencyBoundaries.Item2, numPoints);
+            if (resFrequencies.Count == 0)
+                return approximation;
             double distance;
             double minDistance = Double.MaxValue;
             int indClosestResonance = 0;
@@ -191,10 +193,17 @@ namespace GenCalc.Core.Numerical
                 Decrement.Real = -1.0;
                 return;
             }
-            int leftIndex = 0;
-            int rightIndex = numRoots - 1;
-            double leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
-            double rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
+            double leftFrequency = roots[0];
+            double rightFrequency = roots[numRoots - 1];
+            try
+            {
+                leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, leftFrequency, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
+                rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, rightFrequency, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
+            }
+            catch
+            {
+
+            }
             Decrement.Real = Math.PI * (rightFrequency - leftFrequency) / ResonanceFrequency;
         }
 
@@ -308,8 +317,17 @@ namespace GenCalc.Core.Numerical
                 leftIndex = 0;
                 rightIndex = nRoots - 1;
             }
-            double leftRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
-            double rightRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
+            double leftRoot = roots[leftIndex];
+            double rightRoot = roots[rightIndex];
+            try 
+            { 
+                leftRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, leftRoot, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
+                rightRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, rightRoot, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
+            }
+            catch
+            {
+
+            }
             return new PairDouble(leftRoot, rightRoot);
         }
 
@@ -352,6 +370,7 @@ namespace GenCalc.Core.Numerical
         public readonly double ResonanceRealPeak;
         public readonly double ResonanceImaginaryPeak;
         public readonly double ResonanceAmplitudePeak;
+        private int mkNumRootFindingIterations = 200;
     }
 
     public class DecrementData
