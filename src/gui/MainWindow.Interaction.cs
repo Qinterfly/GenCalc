@@ -101,27 +101,34 @@ namespace GenCalc
 
         private void buttonSelectAcceleration_Click(object sender, RoutedEventArgs e)
         {
-            if (selectAcceleration())
-            {
-                calculateAndPlot();
-                setStatus("The acceleration signal was selected via TestLab");
-            }
-            else
-            {
-                setStatus("An error occured while selecting the acceleration signal");
-            }
+            processSelectionWithStatus(selectAcceleration(), "The acceleration was selected via TestLab", "An error occured while selecting an acceleration");
         }
 
-        private void buttonSelectForce_Click(object sender, RoutedEventArgs e)
+        private void buttonSelectForces_Click(object sender, RoutedEventArgs e)
         {
-            if (selectForce())
+            processSelectionWithStatus(selectForces(), "The forces were selected via TestLab", "An error occured while selecting forces");
+        }
+
+        private void buttonSelectResponses_Click(object sender, RoutedEventArgs e)
+        {
+            processSelectionWithStatus(selectResponses(), "The responses were selected via TestLab", "An error occured while selecting responses");
+        }
+
+        private void buttonSelectReferenceResponse_Click(object sender, RoutedEventArgs e)
+        {
+            processSelectionWithStatus(selectReferenceResponse(), "The reference response was selected via TestLab", "An error occured while selecting a reference response");
+        }
+
+        private void processSelectionWithStatus(bool resFun, string successMessage, string errorMessage)
+        {
+            if (resFun)
             {
                 calculateAndPlot();
-                setStatus("The force signal was selected via TestLab");
+                setStatus(successMessage);
             }
             else
             {
-                setStatus("An error occured while selecting the force signal");
+                setStatus(errorMessage);
             }
         }
 

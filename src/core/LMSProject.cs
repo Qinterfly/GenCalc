@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using LMSTestLabAutomation;
 using GenCalc.Core.Numerical;
 
@@ -27,13 +27,13 @@ namespace GenCalc.Core.Project
 
         public bool isOpened() { return mApp != null; }
 
-        public Response retrieveSelectedSignal(string pathSignal = null)
+        public List<Response> retrieveSelectedSignals(List<string> listPathSignals = null)
         {
-            Response selectedSignal = null;
+            List<Response> selectedSignals = new List<Response>();
             try
             {
                 IBlock2 signal = null;
-                if (pathSignal == null)
+                if (listPathSignals == null)
                 {
                     DataWatch dataWatch = mApp.ActiveBook.FindDataWatch("Navigator_SelectedOIDs");
                     IData dataSelected = dataWatch.Data;
@@ -45,26 +45,47 @@ namespace GenCalc.Core.Project
                             continue;
                         // Retrieving path
                         IData dataOID = attributeMap[iSignal].AttributeMap["OID"];
-                        pathSignal = dataOID.AttributeMap["Path"].AttributeMap["PathString"];
+                        string pathSignal = dataOID.AttributeMap["Path"].AttributeMap["PathString"];
                         // Retreiving signals
                         signal = blockWatch.Data;
-                        break;
+                        if (signal != null)
+                        {
+                            Response response = acquireResponse(pathSignal, signal, signal.Properties);
+                            selectedSignals.Add(response);
+                        }
                     }
                 }
                 else
                 {
-                    signal = (IBlock2)mDatabase.GetItem(pathSignal);
+                    foreach (string pathSignal in listPathSignals)
+                    {
+                        signal = (IBlock2)mDatabase.GetItem(pathSignal);
+                        if (signal != null)
+                        {
+                            Response response = acquireResponse(pathSignal, signal, signal.Properties);
+                            selectedSignals.Add(response);
+                        }
+                    }
                 }
-                if (signal == null)
-                    return null;
-                AttributeMap properties = signal.Properties;
-                selectedSignal = acquireResponse(pathSignal, signal, properties);
+
             }
             catch
             {
                 
             }
-            return selectedSignal;
+            if (selectedSignals.Count == 0)
+                return null;
+            return selectedSignals;
+        }
+
+        public Response retrieveSelectedSignal(string pathSignal = null)
+        {
+            List<Response> selectedSignals;
+            if (pathSignal == null)
+                selectedSignals = retrieveSelectedSignals();
+            else
+                selectedSignals = retrieveSelectedSignals(new List<string>() { pathSignal });
+            return selectedSignals == null ? null : selectedSignals[0];
         }
 
         private Response acquireResponse(in string path, in IBlock2 signal, in AttributeMap properties)
@@ -97,7 +118,9 @@ namespace GenCalc.Core.Project
                 imaginaryPart[k] = data[k, 1] * sign * (-1.0);
             }
             string originalRun = properties["Original run"].AttributeMap["Contents"];
-            Response currentResponse = new Response(type, path, signal.Label, originalRun, frequency, realPart, imaginaryPart);
+            string node = properties["Point id"];
+            string direction = properties["Point direction absolute"];
+            Response currentResponse = new Response(type, path, signal.Label, originalRun, node, direction, frequency, realPart, imaginaryPart);
             return currentResponse;
         }
 

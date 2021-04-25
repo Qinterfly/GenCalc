@@ -15,6 +15,7 @@ namespace GenCalc
         {
             InitializeComponent();
             initializeGraphs();
+            initializeData();
             setGraphEvents();
         }
 
@@ -29,6 +30,16 @@ namespace GenCalc
             mMonophaseGraphModel = new MonophaseGraphModel(graphMonophase);
             // Output
             mDecrementGraphModel = new DecrementGraphModel(graphDecrement);
+            mModalGraphModels = new List<ModalGraphModel>();
+            mModalGraphModels.Add(new ModalMassGraphModel(graphModalMass));
+            mModalGraphModels.Add(new ModalStiffnessGraphModel(graphModalStiffness));
+            mModalGraphModels.Add(new ModalDampingGraphModel(graphModalDamping));
+            mModalGraphModels.Add(new ModalFrequencyGraphModel(graphModalFrequency));
+        }
+
+        private void initializeData()
+        {
+            mSelectedModalSet = new ModalDataSet();
         }
 
         private void setGraphEvents()
@@ -56,9 +67,14 @@ namespace GenCalc
             mSelectedAcceleration = null;
             Response signal = mProject.retrieveSelectedSignal(pathSignal);
             if (signal != null && signal.Type == ResponseType.kAccel)
+            {
                 mSelectedAcceleration = signal;
+            }
             else
+            {
+                textBoxSelectedAcceleration.Text = "";
                 return false;
+            }
             textBoxSelectedAcceleration.Text = mSelectedAcceleration.Name;
             // Set boundaries of levels and frequencies
             PairDouble frequencyBoundaries = mSelectedAcceleration.getFrequencyBoundaries();
@@ -80,18 +96,63 @@ namespace GenCalc
             return true;
         }
 
-        public bool selectForce(string pathSignal = null)
+        public bool selectForces(List<string> listPathForces = null)
         {
             if (mProject == null || !mProject.isOpened())
                 return false;
-            mSelectedForce = null;
-            Response signal = mProject.retrieveSelectedSignal(pathSignal);
-            if (signal != null && signal.Type == ResponseType.kForce)
-                mSelectedForce = signal;
-            else
+            listBoxForces.Items.Clear();
+            mSelectedModalSet.Forces = new List<Response>();
+            List<Response> selectedSignals = mProject.retrieveSelectedSignals(listPathForces);
+            foreach (Response signal in selectedSignals)
+            {
+                if (signal.Type == ResponseType.kForce)
+                {
+                    mSelectedModalSet.Forces.Add(signal);
+                    listBoxForces.Items.Add(signal.Name);
+                }
+            }
+            if (mSelectedModalSet.Forces.Count == 0)
+                mSelectedModalSet.Forces = null;
+            return mSelectedModalSet.Forces != null;
+        }
+
+        public bool selectResponses(List<string> listPathResponses = null)
+        {
+            if (mProject == null || !mProject.isOpened())
                 return false;
-            textBoxSelectedForce.Text = mSelectedForce.Name;
-            return true;
+            listBoxResponses.Items.Clear();
+            mSelectedModalSet.Responses = new List<Response>();
+            List<Response> selectedSignals = mProject.retrieveSelectedSignals(listPathResponses);
+            foreach (Response signal in selectedSignals)
+            {
+                if (signal.Type == ResponseType.kAccel)
+                {
+                    mSelectedModalSet.Responses.Add(signal);
+                    listBoxResponses.Items.Add(signal.Name);
+                }
+            }
+            if (mSelectedModalSet.Responses.Count == 0)
+                mSelectedModalSet.Responses = null;
+            return mSelectedModalSet.Responses != null;
+        }
+
+        public bool selectReferenceResponse(string pathReferenceResponse = null)
+        {
+            if (mProject == null || !mProject.isOpened())
+                return false;
+            mSelectedModalSet.ReferenceResponse = null;
+            Response referenceResponse = mProject.retrieveSelectedSignal(pathReferenceResponse);
+            if (referenceResponse != null)
+            {
+                mSelectedModalSet.ReferenceResponse = referenceResponse;
+                textBoxReferenceResponse.Text = referenceResponse.Name;
+                return true;
+            }
+            else
+            {
+                textBoxReferenceResponse.Text = "";
+                return false;
+            }
         }
 
         private void setFrequencyBoundary(NumericUpDown numericControl, double minValue, double maxValue)
@@ -110,25 +171,35 @@ namespace GenCalc
             PairDouble levelsBoundaries = new PairDouble((double)numericLeftLevelsBoundary.Value, (double)numericRightLevelsBoundary.Value);
             int numLevels = (int)numericLevelsNumber.Value;
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
-            mResponseCharacteristics = new ResponseCharacteristics(mSelectedAcceleration, mSelectedForce, ref frequencyBoundaries, ref levelsBoundaries, numLevels, numInterpolationPoints, numericResonanceFrequency.Value);
+            if (mSelectedModalSet.Forces != null && mSelectedModalSet.Responses != null && mSelectedModalSet.ReferenceResponse == null)
+                mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
+            ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries, 
+                                                                                  numLevels, numInterpolationPoints, numericResonanceFrequency.Value,
+                                                                                  mSelectedModalSet);
             // Set signal data to plot
             foreach (AbstractSignalGraphModel model in mSignalGraphModels)
-                model.setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mResponseCharacteristics.ResonanceFrequency);
-            mHodographGraphModel.setData(mSelectedAcceleration, mResponseCharacteristics.ResonanceRealPeak, mResponseCharacteristics.ResonanceImaginaryPeak);
+                model.setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequency);
+            mHodographGraphModel.setData(mSelectedAcceleration, characteristics.ResonanceRealPeak, characteristics.ResonanceImaginaryPeak);
             mMonophaseGraphModel.setData(mSelectedAcceleration);
             // Set results
-            mDecrementGraphModel.setData(mResponseCharacteristics.Decrement);
+            mDecrementGraphModel.setData(characteristics.Decrement);
+            ModalParameters modalResults = characteristics.Modal;
+            if (modalResults != null)
+            {
+                foreach (ModalGraphModel model in mModalGraphModels)
+                    model.setData(modalResults);
+            }
             // Correct input parameters
             numericLeftFrequencyBoundary.Value = frequencyBoundaries.Item1;
             numericRightFrequencyBoundary.Value = frequencyBoundaries.Item2;
             numericLeftLevelsBoundary.Value = levelsBoundaries.Item1;
             numericRightLevelsBoundary.Value = levelsBoundaries.Item2;
-            if (mResponseCharacteristics.ResonanceFrequency > 0)
-                numericResonanceFrequency.Value = mResponseCharacteristics.ResonanceFrequency;
-            if (mResponseCharacteristics.Decrement != null)
+            if (characteristics.ResonanceFrequency > 0)
+                numericResonanceFrequency.Value = characteristics.ResonanceFrequency;
+            if (characteristics.Decrement != null)
             { 
-                if (mResponseCharacteristics.Decrement.Real > 0)
-                    numericDecrementByReal.Value = mResponseCharacteristics.Decrement.Real;
+                if (characteristics.Decrement.Real > 0)
+                    numericDecrementByReal.Value = characteristics.Decrement.Real;
             }
         }
 
@@ -143,6 +214,8 @@ namespace GenCalc
         public void plotResults()
         {
             mDecrementGraphModel.plot();
+            foreach (ModalGraphModel model in mModalGraphModels)
+                model.plot();
         }
 
         public void calculateAndPlot()
@@ -166,11 +239,13 @@ namespace GenCalc
 
         private LMSProject mProject = null;
         private Response mSelectedAcceleration = null;
-        private Response mSelectedForce = null;
-        private ResponseCharacteristics mResponseCharacteristics = null;
+        private ModalDataSet mSelectedModalSet = null;
+        // Input models
         private List<AbstractSignalGraphModel> mSignalGraphModels;
-        private DecrementGraphModel mDecrementGraphModel;
         private HodographGraphModel mHodographGraphModel;
         private MonophaseGraphModel mMonophaseGraphModel;
+        // Output models
+        private DecrementGraphModel mDecrementGraphModel;
+        private List<ModalGraphModel> mModalGraphModels;
     }
 }

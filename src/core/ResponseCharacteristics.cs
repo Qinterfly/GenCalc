@@ -6,6 +6,7 @@ using MathNet.Numerics.RootFinding;
 namespace GenCalc.Core.Numerical
 {
     using PairDouble = Tuple<double, double>;
+
     public enum DecrementType
     {
         kImaginary,
@@ -14,10 +15,11 @@ namespace GenCalc.Core.Numerical
 
     public class ResponseCharacteristics
     {
-        public ResponseCharacteristics(in Response acceleration, in Response force,
+        public ResponseCharacteristics(in Response acceleration, 
                                        ref PairDouble frequencyBoundaries, ref PairDouble levelsBoundaries,
                                        int numLevels, int numInterpolationPoints = 512,
-                                       double? manualResonanceFrequency = null)
+                                       double? manualResonanceFrequency = null,
+                                       in ModalDataSet modalSet = null)
         {
             if (acceleration == null)
                 return;
@@ -56,11 +58,15 @@ namespace GenCalc.Core.Numerical
             calculateDecrement(DecrementType.kAmplitude, splineAmplitudeAcceleration, frequencyBoundaries, numInterpolationPoints);
             calculateDecrementByReal(splineRealAcceleration, frequencyBoundaries, numInterpolationPoints);
             // Modal data
-            if (force != null)
+            if (modalSet != null && modalSet.isCorrect())
             {
-                Modal = new ModalData();
-                CubicSpline splineAmplitudeForce = CubicSpline.InterpolateNatural(frequency, force.Amplitude);
-                calculateModal(splineAmplitudeAcceleration, splineAmplitudeForce, frequencyBoundaries, numInterpolationPoints);
+                Modal = new ModalParameters();
+                CubicSpline splineGeneralForce = calculateGeneralForce(modalSet);
+                if (splineGeneralForce != null) 
+                { 
+                    CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, modalSet.ReferenceResponse.Amplitude);
+                    calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
+                }
             }
         }
 
@@ -126,8 +132,6 @@ namespace GenCalc.Core.Numerical
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
-            double leftFrequency = startFrequency;
-            double rightFrequency = endFrequency;
             double targetValue;
             double resonancePeak;
             int numLevels = Levels.Length;
@@ -148,21 +152,11 @@ namespace GenCalc.Core.Numerical
             for (int iLevel = 0; iLevel != numLevels; ++iLevel)
             {
                 targetValue = Levels[iLevel] * resonancePeak;
-                Func<double, double> fun = x => spline.Interpolate(x) - targetValue;
-                Func<double, double> diffFun = x => spline.Differentiate(x);
-                List<double> roots = Utilities.findAllRootsBisection(fun, startFrequency, endFrequency, numInterpolationPoints);
-                int nRoots = roots.Count;
-                if (nRoots < 2)
+                PairDouble levelFrequencyBoundaries = findLevelRootsAroundResonance(spline, targetValue, frequencyBoundaries, numInterpolationPoints);
+                if (levelFrequencyBoundaries == null)
                     continue;
-                int leftIndex = roots.FindLastIndex(x => x < ResonanceFrequency);
-                int rightIndex = roots.FindIndex(x => x > ResonanceFrequency);
-                if (leftIndex < 0 || rightIndex < 0)
-                {
-                    leftIndex = 0;
-                    rightIndex = nRoots - 1;
-                }
-                leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
-                rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
+                double leftFrequency = levelFrequencyBoundaries.Item1;
+                double rightFrequency = levelFrequencyBoundaries.Item2;
                 if (leftFrequency < startFrequency || rightFrequency > endFrequency || leftFrequency > rightFrequency)
                     continue;
                 double deltaFreq = (rightFrequency - leftFrequency) / ResonanceFrequency;
@@ -204,29 +198,160 @@ namespace GenCalc.Core.Numerical
             Decrement.Real = Math.PI * (rightFrequency - leftFrequency) / ResonanceFrequency;
         }
 
-        private void calculateModal(in CubicSpline acceleration, in CubicSpline force, in PairDouble frequencyBoundaries, int numInterpolationPoints)
+        private void calculateModal(CubicSpline amplitude, in CubicSpline force, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
+            const double kTwoPi = 2.0 * Math.PI;
             int numLevels = Levels.Length;
             for (int iLevel = 0; iLevel != numLevels; ++iLevel)
             {
-                // TODO
+                double targetValue = Levels[iLevel] * ResonanceAmplitudePeak;
+                PairDouble levelFrequencyBoundaries = findLevelRootsAroundResonance(amplitude, targetValue, frequencyBoundaries, numInterpolationPoints);
+                if (levelFrequencyBoundaries == null)
+                    continue;
+                double[] frequency = Utilities.createUniformMesh(levelFrequencyBoundaries.Item1, levelFrequencyBoundaries.Item2, numInterpolationPoints);
+                double freqI, freqJ;
+                double omegaI, omegaJ, omegaI2, omegaJ2, omegaI4, omegaJ4;
+                double forceI, forceJ, forceI2, forceJ2;
+                double ampI, ampJ, ampI2, ampJ2, ampI4, ampJ4;
+                double[] f = new double[3] { 0.0, 0.0, 0.0 };
+                double[] d = new double[3] { 0.0, 0.0, 0.0 };
+                double[] dampingNumerators = new double[4] { 0.0, 0.0, 0.0, 0.0 };
+                double dampingDenominator = 0.0;
+                for (int i = 0; i != numInterpolationPoints; ++i)
+                {
+                    // Frequency
+                    freqI = frequency[i];
+                    omegaI = freqI * kTwoPi;
+                    omegaI2 = Math.Pow(omegaI, 2.0);
+                    omegaI4 = Math.Pow(omegaI, 4.0);
+                    // Acceleration
+                    ampI = amplitude.Interpolate(freqI) / omegaI2;
+                    ampI2 = Math.Pow(ampI, 2.0);
+                    ampI4 = Math.Pow(ampI, 4.0);
+                    // Force
+                    forceI = force.Interpolate(freqI);
+                    forceI2 = Math.Pow(forceI, 2.0);
+                    for (int j = 0; j != numInterpolationPoints; ++j)
+                    {
+                        // Frequency
+                        freqJ = frequency[j];
+                        omegaJ = freqJ * kTwoPi;
+                        omegaJ2 = Math.Pow(omegaJ, 2.0);
+                        omegaJ4 = Math.Pow(omegaJ, 4.0);
+                        // Acceleration
+                        ampJ = amplitude.Interpolate(freqJ) / omegaJ2;
+                        ampJ2 = Math.Pow(ampJ, 2.0);
+                        ampJ4 = Math.Pow(ampJ, 4.0);
+                        // Force
+                        forceJ = force.Interpolate(freqJ);
+                        forceJ2 = Math.Pow(forceJ, 2.0);
+                        // Calculation "f"
+                        f[0] += ampI4 * ampJ4 * omegaJ4 * (omegaJ4 - omegaI4);
+                        f[1] += ampI4 * ampJ4 * omegaI4 * (omegaJ2 - omegaI2);
+                        f[2] += ampI2 * ampJ2 * omegaI4 * (ampI2 * forceJ2 - ampJ2 * forceI2);
+                        // Calculation "d"
+                        d[0] += ampI4 * ampJ4 * omegaI2 * (omegaI4 - omegaJ4);
+                        d[1] += ampI4 * ampJ4 * omegaI2 * (omegaJ2 - omegaI2);
+                        d[2] += ampI2 * ampJ2 * omegaI2 * (ampI2 * forceJ2 - ampJ2 * forceI2);
+                    } // J
+                    dampingNumerators[0] += forceI2 * ampI2;
+                    dampingNumerators[1] += ampI4;
+                    dampingNumerators[2] += ampI4 * omegaI4;
+                    dampingNumerators[3] += ampI4 * omegaI2;
+                    dampingDenominator += ampI4;
+                } // I
+                f[1] *= 2.0;
+                d[1] *= 2.0;
+                // Calculate modal mass and stiffness
+                double b = (f[1] * d[2] - f[2] * d[1]) / (f[0] * d[1] - f[1] * d[0]);
+                if (b < 0)
+                    continue;
+                double mass = Math.Sqrt(b);
+                double stiffness = -(b * d[0] + d[2]) / (d[1] * mass);
+                if (stiffness < 0)
+                    continue;
+                double resFrequency = Math.Sqrt(stiffness / mass) / kTwoPi;
+                // Calculate damping 
+                dampingNumerators[1] *= -Math.Pow(stiffness, 2.0);
+                dampingNumerators[2] *= -Math.Pow(mass, 2.0);
+                dampingNumerators[3] *= 2.0 * mass * stiffness;
+                double damping = 0.0;
+                foreach (double num in dampingNumerators)
+                    damping += num;
+                damping /= dampingDenominator;
+                if (damping < 0)
+                    continue;
+                damping = Math.Sqrt(damping);
+                // Add results
+                Modal.Levels.Add(Levels[iLevel]);
+                Modal.Mass.Add(mass);
+                Modal.Stiffness.Add(stiffness);
+                Modal.Frequency.Add(resFrequency);
+                Modal.Damping.Add(damping);
             }
+        }
+
+        private PairDouble findLevelRootsAroundResonance(CubicSpline spline, double targetValue, in PairDouble frequencyBoundaries, int numPoints)
+        {
+            double startFrequency = frequencyBoundaries.Item1;
+            double endFrequency = frequencyBoundaries.Item2;
+            Func<double, double> fun = x => spline.Interpolate(x) - targetValue;
+            Func<double, double> diffFun = x => spline.Differentiate(x);
+            List<double> roots = Utilities.findAllRootsBisection(fun, startFrequency, endFrequency, numPoints);
+            int nRoots = roots.Count;
+            if (nRoots < 2)
+                return null;
+            int leftIndex = roots.FindLastIndex(x => x < ResonanceFrequency);
+            int rightIndex = roots.FindIndex(x => x > ResonanceFrequency);
+            if (leftIndex < 0 || rightIndex < 0)
+            {
+                leftIndex = 0;
+                rightIndex = nRoots - 1;
+            }
+            double leftRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[leftIndex], startFrequency, endFrequency);
+            double rightRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, roots[rightIndex], startFrequency, endFrequency);
+            return new PairDouble(leftRoot, rightRoot);
+        }
+
+        private CubicSpline calculateGeneralForce(ModalDataSet modalSet)
+        {
+            double kTwoPi = 2.0 * Math.PI;
+            List<int> links = modalSet.getForceLinks();
+            if (links == null)
+                return null;
+            int numForce = modalSet.Forces.Count;
+            int lengthSignal = modalSet.Forces[0].Length;
+            if (lengthSignal < 2)
+                return null;
+            double[] frequency = modalSet.Forces[0].Frequency;
+            double[] generalForce = new double[lengthSignal];
+            double[] omega2 = new double[lengthSignal];
+            for (int i = 0; i != lengthSignal; ++i)
+            {
+                generalForce[i] = 0.0;
+                omega2[i] = Math.Pow(frequency[i] * kTwoPi, 2.0);
+            }
+            for (int iForce = 0; iForce != numForce; ++iForce)
+            {
+                int iResponse = links[iForce];
+                double[] forceAmplitude = modalSet.Forces[iForce].Amplitude;
+                double[] responseImag = modalSet.Responses[iResponse].ImaginaryPart;
+                for (int i = 0; i != lengthSignal; ++i)
+                    generalForce[i] += Math.Abs(forceAmplitude[i] * responseImag[i] / omega2[i]);
+            }
+            double[] referenceImag = modalSet.ReferenceResponse.ImaginaryPart;
+            for (int i = 0; i != lengthSignal; ++i)
+                generalForce[i] = Math.Abs(generalForce[i] / referenceImag[i] * omega2[i]);
+            return CubicSpline.InterpolateNatural(frequency, generalForce);
         }
 
         public readonly double[] Levels;
         public readonly DecrementData Decrement;
-        public readonly ModalData Modal;
+        public readonly ModalParameters Modal;
         public readonly double ResonanceFrequency;
         public readonly double ResonanceRealPeak;
         public readonly double ResonanceImaginaryPeak;
         public readonly double ResonanceAmplitudePeak;
-    }
-
-    public class ModalData
-    {
-        public double[] mass;
-        public double[] stiffness;
-        public double[] damping;
     }
 
     public class DecrementData

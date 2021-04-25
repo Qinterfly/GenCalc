@@ -12,13 +12,15 @@ namespace GenCalc.Core.Numerical
 
     public class Response
     {
-        public Response(ResponseType type, in string path, in string name, in string originalRun, 
+        public Response(ResponseType type, in string path, in string name, in string originalRun, in string node, in string direction,
                         in double[] frequency, in double[] realPart, in double[] imaginaryPart)
         {
             Type = type;
             Path = path;
             Name = name;
             OriginalRun = originalRun;
+            Node = node;
+            Direction = direction;
             Frequency = frequency;
             RealPart = realPart;
             ImaginaryPart = imaginaryPart;
@@ -32,6 +34,8 @@ namespace GenCalc.Core.Numerical
         {
             return Path == another.Path;
         }
+
+        public int Length { get { return RealPart.Length; } }
 
         public double getFrequencyValue()
         {
@@ -79,5 +83,7 @@ namespace GenCalc.Core.Numerical
         public readonly string Name;
         public readonly string Path;
         public readonly string OriginalRun;
+        public readonly string Node;
+        public readonly string Direction;
     }
 }

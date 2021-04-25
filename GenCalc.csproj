@@ -112,15 +112,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="src\core\Modal.cs" />
     <Compile Include="src\core\Utilities.cs" />
     <Compile Include="src\core\ResponseCharacteristics.cs" />
     <Compile Include="src\core\LMSProject.cs" />
     <Compile Include="src\core\Response.cs" />
-    <Compile Include="src\gui\AbstractGraphModel.cs" />
-    <Compile Include="src\gui\HodographGraphModel.cs" />
-    <Compile Include="src\gui\MonophaseGraphModel.cs" />
-    <Compile Include="src\gui\SignalGraphModel.cs" />
-    <Compile Include="src\gui\DecrementGraphModel.cs" />
+    <Compile Include="src\gui\models\AbstractGraphModel.cs" />
+    <Compile Include="src\gui\models\HodographGraphModel.cs" />
+    <Compile Include="src\gui\models\ModalGraphModal.cs" />
+    <Compile Include="src\gui\models\MonophaseGraphModel.cs" />
+    <Compile Include="src\gui\models\SignalGraphModel.cs" />
+    <Compile Include="src\gui\models\DecrementGraphModel.cs" />
     <Compile Include="src\gui\MainWindow.Interaction.cs" />
     <Compile Include="src\main\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -201,5 +203,11 @@
   <ItemGroup>
     <Resource Include="resources\wave.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\symbolF.png" />
+    <Resource Include="resources\symbolN.png" />
+    <Resource Include="resources\symbolR.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
