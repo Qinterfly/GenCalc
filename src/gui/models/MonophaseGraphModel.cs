@@ -50,7 +50,7 @@ namespace GenCalc.Gui.Plot
             mGraph.plt.Clear();
             if (!isDataSet())
                 return;
-            mGraph.plt.PlotScatter(mFrequency, mMonophaseParameter, lineWidth: mkLineWidth, markerSize: mkMarkerSize);
+            mGraph.plt.PlotScatterHighlight(mFrequency, mMonophaseParameter, lineWidth: mkLineWidth, markerSize: mkMarkerSize);
             mGraph.Render(lowQuality: false);
         }
 

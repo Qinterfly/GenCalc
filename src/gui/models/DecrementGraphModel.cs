@@ -30,10 +30,10 @@ namespace GenCalc.Gui.Plot
                 return;
             dataToVectors(mData.Imaginary, out double[] XImag, out double[] YImag);
             if (XImag.Length > 1 && YImag.Length > 1)
-                mGraph.plt.PlotScatter(XImag, YImag, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Imaginary");
+                mGraph.plt.PlotScatterHighlight(XImag, YImag, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Imaginary");
             dataToVectors(mData.Amplitude, out double[] XAmp, out double[] YAmp);
             if (XAmp.Length > 1 && YAmp.Length > 1)
-                mGraph.plt.PlotScatter(XAmp, YAmp, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Amplitude");
+                mGraph.plt.PlotScatterHighlight(XAmp, YAmp, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Amplitude");
             mGraph.Render(lowQuality: false);
         }
 

@@ -24,7 +24,7 @@ namespace GenCalc.Gui.Plot
             if (!isDataSet())
                 return;
             if (mYData.Count > 1)
-                mGraph.plt.PlotScatter(mData.Levels.ToArray(), mYData.ToArray(), lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Imaginary");
+                mGraph.plt.PlotScatterHighlight(mData.Levels.ToArray(), mYData.ToArray(), lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Imaginary");
             mGraph.Render(lowQuality: false);
         }
 

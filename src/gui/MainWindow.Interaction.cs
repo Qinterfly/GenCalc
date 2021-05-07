@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
 using MahApps.Metro.Controls;
+using GenCalc.Gui.Plot;
 
 namespace GenCalc
 {
@@ -143,6 +144,29 @@ namespace GenCalc
         {
             numericResonanceFrequency.Value = resonanceFrequency;
             calculateAndPlot();
+        }
+
+        private void pointSelectionChanged(PairDouble coordinates)
+        {
+            const string format = "F4";
+            string labelX = coordinates.Item1.ToString(format);
+            string labelY = coordinates.Item2.ToString(format);
+            setStatus($"Selected point: ({labelX}, {labelY})");
+        }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                foreach (AbstractGraphModel model in mSignalGraphModels)
+                    model.clearPointSelection();
+                foreach (AbstractGraphModel model in mModalGraphModels)
+                    model.clearPointSelection();
+                mHodographGraphModel.clearPointSelection();
+                mMonophaseGraphModel.clearPointSelection();
+                mDecrementGraphModel.clearPointSelection();
+                clearStatus();
+            }
         }
     }
 }

@@ -52,7 +52,7 @@ namespace GenCalc.Gui.Plot
             mResonanceFrequencyLine = mGraph.plt.PlotVLine(mResonanceFrequency, draggable: true, lineStyle: LineStyle.Dot, color: Color.Black, lineWidth: 1,
                                                            dragLimitLower: dragFrequencyLimits.Item1, dragLimitUpper: dragFrequencyLimits.Item2);
             // Signal
-            mGraph.plt.PlotScatter(mSignal.Frequency, mYData, lineWidth: mkLineWidth, markerSize: mkMarkerSize);
+            mGraph.plt.PlotScatterHighlight(mSignal.Frequency, mYData, lineWidth: mkLineWidth, markerSize: mkMarkerSize);
             mGraph.Render(lowQuality: false);
         }
 

@@ -7,7 +7,7 @@
         xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:GenCalc"
         mc:Ignorable="d"
-        Title="GenCalc  " Height="700" Width="800" WindowStartupLocation="CenterScreen" FontSize="11" Icon="/GenCalc;component/resources/wave.png">
+        Title="GenCalc  " Height="700" Width="800" WindowStartupLocation="CenterScreen" FontSize="11" Icon="/GenCalc;component/resources/wave.png" KeyDown="MainWindow_KeyDown">
     <DockPanel x:Name="mainPanel" Margin="0">
         <StatusBar x:Name="statusBar" Height="22" VerticalAlignment="Top" DockPanel.Dock="Bottom" Margin="0,0,0,0">
             <StatusBarItem>

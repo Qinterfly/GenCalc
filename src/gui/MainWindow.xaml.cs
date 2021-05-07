@@ -48,8 +48,13 @@ namespace GenCalc
             {
                 model.FrequencyBoundariesEvent += frequencyBoundariesChanged;
                 model.ResonanceFrequencyEvent += resonanceFrequencyChanged;
+                model.PointSelectionChangedEvent += pointSelectionChanged;
             }
-                
+            mHodographGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
+            mMonophaseGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
+            mDecrementGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
+            foreach (AbstractGraphModel model in mModalGraphModels)
+                model.PointSelectionChangedEvent += pointSelectionChanged;
         }
 
         public void openProject(string filePath)

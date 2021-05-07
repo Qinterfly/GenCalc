@@ -29,7 +29,7 @@ namespace GenCalc.Gui.Plot
             mGraph.plt.Clear();
             if (!isDataSet())
                 return;
-            mGraph.plt.PlotScatter(mSignal.RealPart, mSignal.ImaginaryPart, lineWidth: mkLineWidth, markerSize: mkMarkerSize);
+            mGraph.plt.PlotScatterHighlight(mSignal.RealPart, mSignal.ImaginaryPart, lineWidth: mkLineWidth, markerSize: mkMarkerSize);
             mGraph.plt.PlotPoint(mResonanceRealPeak, mResonanceImaginaryPeak, color: Color.Red, markerShape: MarkerShape.filledDiamond, markerSize: 10);
             mGraph.Render(lowQuality: false);
         }
