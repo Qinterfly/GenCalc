@@ -115,7 +115,7 @@ namespace GenCalc.Core.Project
             for (int k = 0; k != nResponse; ++k)
             {
                 realPart[k]      = data[k, 0] * sign;
-                imaginaryPart[k] = data[k, 1] * sign * (-1.0);
+                imaginaryPart[k] = data[k, 1] * sign;
             }
             string originalRun = properties["Original run"].AttributeMap["Contents"];
             string node = properties["Point id"];
