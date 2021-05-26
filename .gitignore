@@ -1,6 +1,7 @@
 archive
 help
 bin
+notes
 obj
 tests/bin
 tests/obj
