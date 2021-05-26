@@ -28,12 +28,20 @@ namespace GenCalc.Gui.Plot
             mGraph.plt.Clear();
             if (!isDataSet())
                 return;
+            // Imaginary 
             dataToVectors(mData.Imaginary, out double[] XImag, out double[] YImag);
-            if (XImag.Length > 1 && YImag.Length > 1)
+            if (XImag.Length > 1)
                 mGraph.plt.PlotScatterHighlight(XImag, YImag, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Imaginary");
+            // Amplitude
             dataToVectors(mData.Amplitude, out double[] XAmp, out double[] YAmp);
-            if (XAmp.Length > 1 && YAmp.Length > 1)
+            if (XAmp.Length > 1)
                 mGraph.plt.PlotScatterHighlight(XAmp, YAmp, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Amplitude");
+            // General characteristics
+            if (mData.General != null && mData.General.Count > 0)
+            {
+                dataToVectors(mData.General, out double[] XGen, out double[] YGen);
+                mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "General");
+            }
             mGraph.Render(lowQuality: false);
         }
 

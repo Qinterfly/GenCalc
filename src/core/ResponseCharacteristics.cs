@@ -211,9 +211,11 @@ namespace GenCalc.Core.Numerical
         {
             const double kTwoPi = 2.0 * Math.PI;
             int numLevels = Levels.Length;
+            Decrement.General = new Dictionary<double, double>();
             for (int iLevel = 0; iLevel != numLevels; ++iLevel)
             {
-                double targetValue = Levels[iLevel] * ResonanceAmplitudePeak;
+                double levelValue = Levels[iLevel];
+                double targetValue = levelValue * ResonanceAmplitudePeak;
                 PairDouble levelFrequencyBoundaries = findLevelRootsAroundResonance(amplitude, targetValue, frequencyBoundaries, numInterpolationPoints);
                 if (levelFrequencyBoundaries == null)
                     continue;
@@ -291,8 +293,14 @@ namespace GenCalc.Core.Numerical
                 if (damping < 0)
                     continue;
                 damping = Math.Sqrt(damping);
+                double decrementDenominator = Math.Sqrt(4.0 * Math.Pow(stiffness / damping, 2.0) - 1);
+                if (decrementDenominator > 0)
+                {
+                    double decrement = 2 * Math.PI / decrementDenominator;
+                    Decrement.General.Add(levelValue, decrement);
+                }
                 // Add results
-                Modal.Levels.Add(Levels[iLevel]);
+                Modal.Levels.Add(levelValue);
                 Modal.Mass.Add(mass);
                 Modal.Stiffness.Add(stiffness);
                 Modal.Frequency.Add(resFrequency);
@@ -378,5 +386,6 @@ namespace GenCalc.Core.Numerical
         public Dictionary<double, double> Imaginary;
         public Dictionary<double, double> Amplitude;
         public double Real;
+        public Dictionary<double, double> General;
     }
 }
