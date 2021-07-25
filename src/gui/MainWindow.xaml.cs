@@ -47,9 +47,11 @@ namespace GenCalc
             foreach (AbstractSignalGraphModel model in mSignalGraphModels)
             {
                 model.FrequencyBoundariesEvent += frequencyBoundariesChanged;
-                model.ResonanceFrequencyEvent += resonanceFrequencyChanged;
                 model.PointSelectionChangedEvent += pointSelectionChanged;
             }
+            mSignalGraphModels[0].ResonanceFrequencyEvent += resonanceFrequencyImaginaryChanged;
+            mSignalGraphModels[1].ResonanceFrequencyEvent += resonanceFrequencyRealChanged;
+            mSignalGraphModels[2].ResonanceFrequencyEvent += resonanceFrequencyAmplitudeChanged;
             mHodographGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
             mMonophaseGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
             mDecrementGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
@@ -94,10 +96,9 @@ namespace GenCalc
             setFrequencyBoundary(numericRightFrequencyBoundary, minFrequency, maxFrequency);
             numericRightFrequencyBoundary.Value = maxFrequency;
             // Resonance frequency
-            numericResonanceFrequency.IsReadOnly = false;
-            numericResonanceFrequency.Value = null;
-            numericResonanceFrequency.Maximum = maxFrequency;
-            numericResonanceFrequency.Minimum = minFrequency;
+            enableNumericControl(numericResonanceFrequencyReal,      minFrequency, maxFrequency);
+            enableNumericControl(numericResonanceFrequencyImaginary, minFrequency, maxFrequency);
+            enableNumericControl(numericResonanceFrequencyAmplitude, minFrequency, maxFrequency);
             // Decrement by real part
             numericDecrementByReal.Value = null;
             return true;
@@ -162,6 +163,14 @@ namespace GenCalc
             }
         }
 
+        private void enableNumericControl(NumericUpDown numericControl, double minValue, double maxValue)
+        {
+            numericControl.IsReadOnly = false;
+            numericControl.Value = null;
+            numericControl.Minimum = minValue;
+            numericControl.Maximum = maxValue;
+        }
+
         private void setFrequencyBoundary(NumericUpDown numericControl, double minValue, double maxValue)
         {
             if (numericControl.Value != null && numericControl.Value < minValue)
@@ -183,12 +192,14 @@ namespace GenCalc
                 if (mSelectedModalSet.Forces != null && mSelectedModalSet.Responses != null && mSelectedModalSet.ReferenceResponse == null)
                     mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
             }
-            ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries, 
-                                                                                  numLevels, numInterpolationPoints, numericResonanceFrequency.Value,
+            ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries,
+                                                                                  numLevels, numInterpolationPoints,
+                                                                                  numericResonanceFrequencyReal.Value, numericResonanceFrequencyImaginary.Value, numericResonanceFrequencyAmplitude.Value,
                                                                                   mSelectedModalSet);
             // Set signal data to plot
-            foreach (AbstractSignalGraphModel model in mSignalGraphModels)
-                model.setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequency);
+            mSignalGraphModels[0].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyImaginary);
+            mSignalGraphModels[1].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyReal);
+            mSignalGraphModels[2].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyAmplitude);
             mHodographGraphModel.setData(mSelectedAcceleration, characteristics.ResonanceRealPeak, characteristics.ResonanceImaginaryPeak);
             mMonophaseGraphModel.setData(mSelectedAcceleration);
             // Set results
@@ -204,8 +215,12 @@ namespace GenCalc
             numericRightFrequencyBoundary.Value = frequencyBoundaries.Item2;
             numericLeftLevelsBoundary.Value = levelsBoundaries.Item1;
             numericRightLevelsBoundary.Value = levelsBoundaries.Item2;
-            if (characteristics.ResonanceFrequency > 0)
-                numericResonanceFrequency.Value = characteristics.ResonanceFrequency;
+            if (characteristics.ResonanceFrequencyReal > 0)
+                numericResonanceFrequencyReal.Value = characteristics.ResonanceFrequencyReal;
+            if (characteristics.ResonanceFrequencyImaginary > 0)
+                numericResonanceFrequencyImaginary.Value = characteristics.ResonanceFrequencyImaginary;
+            if (characteristics.ResonanceFrequencyAmplitude > 0)
+                numericResonanceFrequencyAmplitude.Value = characteristics.ResonanceFrequencyAmplitude;
             numericDecrementByReal.Value = null;
             if (characteristics.Decrement != null)
             { 
@@ -256,7 +271,9 @@ namespace GenCalc
             numericRightFrequencyBoundary.Value = null;
             // Output
             numericDecrementByReal.Value = null;
-            numericResonanceFrequency.Value = null;
+            numericResonanceFrequencyReal.Value = null;
+            numericResonanceFrequencyImaginary.Value = null;
+            numericResonanceFrequencyAmplitude.Value = null;
             // Graphs
             clearInput();
             clearResults();

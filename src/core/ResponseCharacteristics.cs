@@ -18,7 +18,7 @@ namespace GenCalc.Core.Numerical
         public ResponseCharacteristics(in Response acceleration, 
                                        ref PairDouble frequencyBoundaries, ref PairDouble levelsBoundaries,
                                        int numLevels, int numInterpolationPoints = 512,
-                                       double? manualResonanceFrequency = null,
+                                       double? manualFrequencyReal = null, double? manualFrequencyImaginary = null, double? manualFrequencyAmplitude = null,
                                        in ModalDataSet modalSet = null)
         {
             if (acceleration == null)
@@ -39,20 +39,28 @@ namespace GenCalc.Core.Numerical
             Levels = new double[numLevels];
             for (int i = 0; i != numLevels; ++i)
                 Levels[i] = startLevel + i * stepLevel;
+            // Finding resonance frequencies
+            double startFrequency = acceleration.getFrequencyValue();
+                // Real
+            if (manualFrequencyReal == null)
+                ResonanceFrequencyReal = retrieveResonanceFrequency(splineRealAcceleration, false, frequencyBoundaries, numInterpolationPoints, startFrequency);
+            else
+                ResonanceFrequencyReal = (double)manualFrequencyReal;
+                // Imaginary
+            if (manualFrequencyImaginary == null)
+                ResonanceFrequencyImaginary = retrieveResonanceFrequency(splineImagAcceleration, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
+            else
+                ResonanceFrequencyImaginary = (double)manualFrequencyImaginary;
+                // Amplitude
+            if (manualFrequencyAmplitude == null)
+                ResonanceFrequencyAmplitude = retrieveResonanceFrequency(splineAmplitudeAcceleration, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
+            else
+                ResonanceFrequencyAmplitude = (double)manualFrequencyAmplitude;
             // Calculate decrements
             Decrement = new DecrementData();
-            if (manualResonanceFrequency == null) 
-            { 
-                ResonanceFrequency = acceleration.getFrequencyValue();
-                ResonanceFrequency = retrieveImagResonanceFrequency(splineImagAcceleration, frequencyBoundaries, numInterpolationPoints, ResonanceFrequency);
-            }
-            else
-            {
-                ResonanceFrequency = (double)manualResonanceFrequency;
-            }
-            ResonanceRealPeak = splineRealAcceleration.Interpolate(ResonanceFrequency);
-            ResonanceImaginaryPeak = splineImagAcceleration.Interpolate(ResonanceFrequency);
-            ResonanceAmplitudePeak = splineAmplitudeAcceleration.Interpolate(ResonanceFrequency);
+            ResonanceRealPeak = splineRealAcceleration.Interpolate(ResonanceFrequencyReal);
+            ResonanceImaginaryPeak = splineImagAcceleration.Interpolate(ResonanceFrequencyImaginary);
+            ResonanceAmplitudePeak = splineAmplitudeAcceleration.Interpolate(ResonanceFrequencyAmplitude);
             // Decrements
             calculateDecrement(DecrementType.kImaginary, splineImagAcceleration, frequencyBoundaries, numInterpolationPoints);
             calculateDecrement(DecrementType.kAmplitude, splineAmplitudeAcceleration, frequencyBoundaries, numInterpolationPoints);
@@ -105,10 +113,20 @@ namespace GenCalc.Core.Numerical
             levelsBoundaries = new PairDouble(resMin, resMax);
         }
 
-        private double retrieveImagResonanceFrequency(CubicSpline splineImag, in PairDouble frequencyBoundaries, int numPoints, double approximation)
+        private double retrieveResonanceFrequency(CubicSpline spline, bool isDerivativeZero, in PairDouble frequencyBoundaries, int numPoints, double approximation)
         {
-            Func<double, double> resonanceFunc = x => splineImag.Differentiate(x);
-            Func<double, double> resonanceDiffFunc = x => splineImag.Differentiate2(x);
+            Func<double, double> resonanceFunc;
+            Func<double, double> resonanceDiffFunc;
+            if (isDerivativeZero)
+            {
+                resonanceFunc = x => spline.Differentiate(x);
+                resonanceDiffFunc = x => spline.Differentiate2(x);
+            }
+            else
+            {
+                resonanceFunc = x => spline.Interpolate(x);
+                resonanceDiffFunc = x => spline.Differentiate(x);
+            }
             List<double> resFrequencies = Utilities.findAllRootsBisection(resonanceFunc, frequencyBoundaries.Item1, frequencyBoundaries.Item2, numPoints);
             if (resFrequencies.Count == 0)
                 return approximation;
@@ -125,7 +143,6 @@ namespace GenCalc.Core.Numerical
                     minDistance = distance;
                     indClosestResonance = i;
                 }
-
             }
             return resFrequencies[indClosestResonance];
         }
@@ -137,31 +154,33 @@ namespace GenCalc.Core.Numerical
             double targetValue;
             double resonancePeak;
             int numLevels = Levels.Length;
+            double resonanceFrequency;
             switch (type)
             {
                 case DecrementType.kImaginary:
                     Decrement.Imaginary = new Dictionary<double, double>();
                     resonancePeak = ResonanceImaginaryPeak;
+                    resonanceFrequency = ResonanceFrequencyImaginary;
                     break;
                 case DecrementType.kAmplitude:
                     Decrement.Amplitude = new Dictionary<double, double>();
                     resonancePeak = ResonanceAmplitudePeak;
+                    resonanceFrequency = ResonanceFrequencyAmplitude;
                     break;
                 default:
-                    resonancePeak = spline.Interpolate(ResonanceFrequency);
-                    break;
+                    return;
             }
             for (int iLevel = 0; iLevel != numLevels; ++iLevel)
             {
                 targetValue = Levels[iLevel] * resonancePeak;
-                PairDouble levelFrequencyBoundaries = findLevelRootsAroundResonance(spline, targetValue, frequencyBoundaries, numInterpolationPoints);
+                PairDouble levelFrequencyBoundaries = findLevelRootsAroundResonance(spline, targetValue, frequencyBoundaries, numInterpolationPoints, resonanceFrequency);
                 if (levelFrequencyBoundaries == null)
                     continue;
                 double leftFrequency = levelFrequencyBoundaries.Item1;
                 double rightFrequency = levelFrequencyBoundaries.Item2;
                 if (leftFrequency < startFrequency || rightFrequency > endFrequency || leftFrequency > rightFrequency)
                     continue;
-                double deltaFreq = (rightFrequency - leftFrequency) / ResonanceFrequency;
+                double deltaFreq = (rightFrequency - leftFrequency) / resonanceFrequency;
                 double fracAmp = Math.Abs(targetValue / resonancePeak);
                 double decrement;
                 switch (type)
@@ -204,7 +223,7 @@ namespace GenCalc.Core.Numerical
             {
 
             }
-            Decrement.Real = Math.PI * (rightFrequency - leftFrequency) / ResonanceFrequency;
+            Decrement.Real = Math.PI * (rightFrequency - leftFrequency) / ResonanceFrequencyReal;
         }
 
         private void calculateModal(CubicSpline amplitude, in CubicSpline force, in PairDouble frequencyBoundaries, int numInterpolationPoints)
@@ -216,7 +235,7 @@ namespace GenCalc.Core.Numerical
             {
                 double levelValue = Levels[iLevel];
                 double targetValue = levelValue * ResonanceAmplitudePeak;
-                PairDouble levelFrequencyBoundaries = findLevelRootsAroundResonance(amplitude, targetValue, frequencyBoundaries, numInterpolationPoints);
+                PairDouble levelFrequencyBoundaries = findLevelRootsAroundResonance(amplitude, targetValue, frequencyBoundaries, numInterpolationPoints, ResonanceFrequencyAmplitude);
                 if (levelFrequencyBoundaries == null)
                     continue;
                 double[] frequency = Utilities.createUniformMesh(levelFrequencyBoundaries.Item1, levelFrequencyBoundaries.Item2, numInterpolationPoints);
@@ -308,7 +327,7 @@ namespace GenCalc.Core.Numerical
             }
         }
 
-        private PairDouble findLevelRootsAroundResonance(CubicSpline spline, double targetValue, in PairDouble frequencyBoundaries, int numPoints)
+        private PairDouble findLevelRootsAroundResonance(CubicSpline spline, double targetValue, in PairDouble frequencyBoundaries, int numPoints, double resonanceFrequency)
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
@@ -318,8 +337,8 @@ namespace GenCalc.Core.Numerical
             int nRoots = roots.Count;
             if (nRoots < 2)
                 return null;
-            int leftIndex = roots.FindLastIndex(x => x < ResonanceFrequency);
-            int rightIndex = roots.FindIndex(x => x > ResonanceFrequency);
+            int leftIndex = roots.FindLastIndex(x => x < resonanceFrequency);
+            int rightIndex = roots.FindIndex(x => x > resonanceFrequency);
             if (leftIndex < 0 || rightIndex < 0)
             {
                 leftIndex = 0;
@@ -374,7 +393,9 @@ namespace GenCalc.Core.Numerical
         public readonly double[] Levels;
         public readonly DecrementData Decrement;
         public readonly ModalParameters Modal;
-        public readonly double ResonanceFrequency;
+        public readonly double ResonanceFrequencyReal;
+        public readonly double ResonanceFrequencyImaginary;
+        public readonly double ResonanceFrequencyAmplitude;
         public readonly double ResonanceRealPeak;
         public readonly double ResonanceImaginaryPeak;
         public readonly double ResonanceAmplitudePeak;

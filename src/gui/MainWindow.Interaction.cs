@@ -140,9 +140,21 @@ namespace GenCalc
             calculateAndPlot();
         }
 
-        private void resonanceFrequencyChanged(double resonanceFrequency)
+        private void resonanceFrequencyRealChanged(double resonanceFrequency)
         {
-            numericResonanceFrequency.Value = resonanceFrequency;
+            numericResonanceFrequencyReal.Value = resonanceFrequency;
+            calculateAndPlot();
+        }
+
+        private void resonanceFrequencyImaginaryChanged(double resonanceFrequency)
+        {
+            numericResonanceFrequencyImaginary.Value = resonanceFrequency;
+            calculateAndPlot();
+        }
+
+        private void resonanceFrequencyAmplitudeChanged(double resonanceFrequency)
+        {
+            numericResonanceFrequencyAmplitude.Value = resonanceFrequency;
             calculateAndPlot();
         }
 
