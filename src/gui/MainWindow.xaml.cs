@@ -9,6 +9,13 @@ namespace GenCalc
 {
     using PairDouble = Tuple<double, double>;
 
+    public enum SignalModelType
+    {
+        kImaginary,
+        kReal,
+        kAmplitude
+    }
+
     public partial class MainWindow : MetroWindow
     {
         public MainWindow()
@@ -22,10 +29,10 @@ namespace GenCalc
         private void initializeGraphs()
         {
             // Input
-            mSignalGraphModels = new List<AbstractSignalGraphModel>();
-            mSignalGraphModels.Add(new ImaginaryPartGraphModel(graphImaginaryPart));
-            mSignalGraphModels.Add(new RealPartGraphModel(graphRealPart));
-            mSignalGraphModels.Add(new AmplitudeGraphModel(graphAmplitude));
+            mSignalGraphModels = new Dictionary<SignalModelType, AbstractSignalGraphModel>();
+            mSignalGraphModels.Add(SignalModelType.kImaginary, new ImaginaryPartGraphModel(graphImaginaryPart));
+            mSignalGraphModels.Add(SignalModelType.kReal, new RealPartGraphModel(graphRealPart));
+            mSignalGraphModels.Add(SignalModelType.kAmplitude, new AmplitudeGraphModel(graphAmplitude));
             mHodographGraphModel = new HodographGraphModel(graphHodograph);
             mMonophaseGraphModel = new MonophaseGraphModel(graphMonophase);
             // Output
@@ -44,14 +51,14 @@ namespace GenCalc
 
         private void setGraphEvents()
         {
-            foreach (AbstractSignalGraphModel model in mSignalGraphModels)
+            foreach (AbstractSignalGraphModel model in mSignalGraphModels.Values)
             {
                 model.FrequencyBoundariesEvent += frequencyBoundariesChanged;
                 model.PointSelectionChangedEvent += pointSelectionChanged;
             }
-            mSignalGraphModels[0].ResonanceFrequencyEvent += resonanceFrequencyImaginaryChanged;
-            mSignalGraphModels[1].ResonanceFrequencyEvent += resonanceFrequencyRealChanged;
-            mSignalGraphModels[2].ResonanceFrequencyEvent += resonanceFrequencyAmplitudeChanged;
+            mSignalGraphModels[SignalModelType.kImaginary].ResonanceFrequencyEvent += resonanceFrequencyImaginaryChanged;
+            mSignalGraphModels[SignalModelType.kReal].ResonanceFrequencyEvent += resonanceFrequencyRealChanged;
+            mSignalGraphModels[SignalModelType.kAmplitude].ResonanceFrequencyEvent += resonanceFrequencyAmplitudeChanged;
             mHodographGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
             mMonophaseGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
             mDecrementGraphModel.PointSelectionChangedEvent += pointSelectionChanged;
@@ -197,9 +204,9 @@ namespace GenCalc
                                                                                   numericResonanceFrequencyReal.Value, numericResonanceFrequencyImaginary.Value, numericResonanceFrequencyAmplitude.Value,
                                                                                   mSelectedModalSet);
             // Set signal data to plot
-            mSignalGraphModels[0].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyImaginary);
-            mSignalGraphModels[1].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyReal);
-            mSignalGraphModels[2].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyAmplitude);
+            mSignalGraphModels[SignalModelType.kImaginary].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyImaginary);
+            mSignalGraphModels[SignalModelType.kReal].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyReal);
+            mSignalGraphModels[SignalModelType.kAmplitude].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyAmplitude);
             mHodographGraphModel.setData(mSelectedAcceleration, characteristics.ResonanceRealPeak, characteristics.ResonanceImaginaryPeak);
             mMonophaseGraphModel.setData(mSelectedAcceleration);
             // Set results
@@ -231,7 +238,7 @@ namespace GenCalc
 
         public void plotInput()
         {
-            foreach (AbstractSignalGraphModel model in mSignalGraphModels)
+            foreach (AbstractSignalGraphModel model in mSignalGraphModels.Values)
                 model.plot();
             mHodographGraphModel.plot();
             mMonophaseGraphModel.plot();
@@ -282,7 +289,7 @@ namespace GenCalc
         public void clearInput()
         {
 
-            foreach (AbstractSignalGraphModel model in mSignalGraphModels)
+            foreach (AbstractSignalGraphModel model in mSignalGraphModels.Values)
                 model.clear();
             mHodographGraphModel.clear();
             mMonophaseGraphModel.clear();
@@ -310,7 +317,7 @@ namespace GenCalc
         private Response mSelectedAcceleration = null;
         private ModalDataSet mSelectedModalSet = null;
         // Input models
-        private List<AbstractSignalGraphModel> mSignalGraphModels;
+        private Dictionary<SignalModelType, AbstractSignalGraphModel> mSignalGraphModels;
         private HodographGraphModel mHodographGraphModel;
         private MonophaseGraphModel mMonophaseGraphModel;
         // Output models

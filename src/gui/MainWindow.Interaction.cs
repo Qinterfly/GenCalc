@@ -170,7 +170,7 @@ namespace GenCalc
         {
             if (e.Key == Key.Escape)
             {
-                foreach (AbstractGraphModel model in mSignalGraphModels)
+                foreach (AbstractGraphModel model in mSignalGraphModels.Values)
                     model.clearPointSelection();
                 foreach (AbstractGraphModel model in mModalGraphModels)
                     model.clearPointSelection();
