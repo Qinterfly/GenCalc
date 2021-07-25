@@ -208,7 +208,8 @@ namespace GenCalc
             mSignalGraphModels[SignalModelType.kReal].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyReal);
             mSignalGraphModels[SignalModelType.kAmplitude].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyAmplitude);
             mHodographGraphModel.setData(mSelectedAcceleration, characteristics.ResonanceRealPeak, characteristics.ResonanceImaginaryPeak);
-            mMonophaseGraphModel.setData(mSelectedAcceleration);
+            if (mSelectedModalSet != null)
+                mMonophaseGraphModel.setData(mSelectedModalSet.Responses);
             // Set results
             mDecrementGraphModel.setData(characteristics.Decrement);
             ModalParameters modalResults = characteristics.Modal;
