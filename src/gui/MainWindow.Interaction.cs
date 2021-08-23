@@ -115,11 +115,6 @@ namespace GenCalc
             processSelectionWithStatus(selectResponses(), "The responses were selected via TestLab", "An error occured while selecting responses");
         }
 
-        private void buttonSelectReferenceResponse_Click(object sender, RoutedEventArgs e)
-        {
-            processSelectionWithStatus(selectReferenceResponse(), "The reference response was selected via TestLab", "An error occured while selecting a reference response");
-        }
-
         private void processSelectionWithStatus(bool resFun, string successMessage, string errorMessage)
         {
             if (resFun)

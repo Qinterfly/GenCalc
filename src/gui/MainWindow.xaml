@@ -134,7 +134,6 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Label x:Name="labelForces" Content="Forces: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
                         <ListBox x:Name="listBoxForces" Grid.Column="1" BorderThickness="1" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal" Margin="5,0,5,5"/>
@@ -151,15 +150,6 @@
                             <StackPanel Width="14" Height="14" VerticalAlignment="Center">
                                 <StackPanel.Background>
                                     <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/symbolR.png"/>
-                                </StackPanel.Background>
-                            </StackPanel>
-                        </Button>
-                        <Label x:Name="labelReferenceResponse" Content="Reference: " Grid.Row="2"  HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" FontWeight="Normal"/>
-                        <TextBox x:Name="textBoxReferenceResponse" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Stretch" FontWeight="Normal" Margin="5,0" IsReadOnly="True"/>
-                        <Button x:Name="buttonSelectReferenceResponse" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Click="buttonSelectReferenceResponse_Click">
-                            <StackPanel Width="14" Height="14" VerticalAlignment="Center">
-                                <StackPanel.Background>
-                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/symbolN.png"/>
                                 </StackPanel.Background>
                             </StackPanel>
                         </Button>

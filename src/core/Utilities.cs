@@ -53,7 +53,6 @@ namespace GenCalc.Core.Numerical
         {
             List<double> roots = new List<double>();
             double step = (rightBound - leftBound) / (numSteps - 1);
-            bool isFound;
             double previousX = leftBound;
             double previousY = fun(leftBound);
             double currentX, currentY;
@@ -61,20 +60,14 @@ namespace GenCalc.Core.Numerical
             {
                 currentX = previousX + step;
                 currentY = fun(currentX);
-                isFound = currentY * previousY < 0.0;
-                if (isFound)
+                if (currentY * previousY < 0.0)
                     roots.Add((currentX + previousX) / 2.0);
+                if (Math.Abs(currentY) <= double.Epsilon)
+                    roots.Add(currentY);
                 previousX = currentX;
                 previousY = currentY;
             }
             return roots;
-        }
-
-        public static PairDouble levelsBoundariesToValues(in Response signal, in PairDouble levelsBoundaries)
-        {
-            PairDouble resBound = null;
-            // TODO
-            return resBound;
         }
     }
 }

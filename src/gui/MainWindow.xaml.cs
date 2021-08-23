@@ -151,25 +151,6 @@ namespace GenCalc
             return mSelectedModalSet.Responses != null;
         }
 
-        public bool selectReferenceResponse(string pathReferenceResponse = null)
-        {
-            if (mProject == null || !mProject.isOpened())
-                return false;
-            mSelectedModalSet.ReferenceResponse = null;
-            Response referenceResponse = mProject.retrieveSelectedSignal(pathReferenceResponse);
-            if (referenceResponse != null)
-            {
-                mSelectedModalSet.ReferenceResponse = referenceResponse;
-                textBoxReferenceResponse.Text = referenceResponse.Name;
-                return true;
-            }
-            else
-            {
-                textBoxReferenceResponse.Text = "";
-                return false;
-            }
-        }
-
         private void enableNumericControl(NumericUpDown numericControl, double minValue, double maxValue)
         {
             numericControl.IsReadOnly = false;
@@ -273,7 +254,6 @@ namespace GenCalc
             // Modal data
             listBoxForces.Items.Clear();
             listBoxResponses.Items.Clear();
-            textBoxReferenceResponse.Text = "";
             // Calculation pararmeters
             numericLeftFrequencyBoundary.Value = null;
             numericRightFrequencyBoundary.Value = null;

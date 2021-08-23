@@ -355,6 +355,8 @@ namespace GenCalc.Core.Numerical
             {
 
             }
+            if (leftRoot > resonanceFrequency || rightRoot < resonanceFrequency)
+                return null;
             return new PairDouble(leftRoot, rightRoot);
         }
 
