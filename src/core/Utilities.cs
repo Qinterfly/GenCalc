@@ -63,7 +63,7 @@ namespace GenCalc.Core.Numerical
                 if (currentY * previousY < 0.0)
                     roots.Add((currentX + previousX) / 2.0);
                 if (Math.Abs(currentY) <= double.Epsilon)
-                    roots.Add(currentY);
+                    roots.Add(currentX);
                 previousX = currentX;
                 previousY = currentY;
             }
