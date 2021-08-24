@@ -8,11 +8,6 @@
         xmlns:local="clr-namespace:GenCalc"
         mc:Ignorable="d"
         Title="GenCalc  " Height="700" Width="800" WindowStartupLocation="CenterScreen" FontSize="11" Icon="/GenCalc;component/resources/wave.png" KeyDown="MainWindow_KeyDown">
-    <Window.CommandBindings>
-        <CommandBinding Command="ApplicationCommands.Delete"
-                  Executed="DeleteCmdExecuted"
-                  CanExecute="DeleteCmdCanExecute"/>
-    </Window.CommandBindings>
     <DockPanel x:Name="mainPanel" Margin="0">
         <StatusBar x:Name="statusBar" Height="22" VerticalAlignment="Top" DockPanel.Dock="Bottom" Margin="0,0,0,0">
             <StatusBarItem>
@@ -115,7 +110,7 @@
                         <TextBox x:Name="textBoxSelectedAcceleration" Grid.Column="1" Margin="5,0" Grid.Row="1" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True">
                             <TextBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Clear" Click="removeAcceleration" Command="Delete"/>
+                                    <MenuItem Header="_Remove" Click="removeAcceleration"/>
                                 </ContextMenu>
                             </TextBox.ContextMenu>
                         </TextBox>
@@ -150,7 +145,7 @@
                         <ListBox x:Name="listBoxForces" Grid.Column="1" BorderThickness="1" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal" Margin="5,0,5,5">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Clear" Click="removeForces" Command="Delete"></MenuItem>
+                                    <MenuItem Header="_Remove all" Click="removeForces"/>
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
@@ -165,7 +160,7 @@
                         <ListBox x:Name="listBoxResponses" Grid.Column="1" Grid.Row="1" BorderThickness="1" Margin="5,0,5,5" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Clear" Click="removeResponses" Command="Delete"></MenuItem>
+                                    <MenuItem Header="_Remove all" Click="removeResponses"/>
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
