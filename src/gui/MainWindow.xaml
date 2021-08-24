@@ -8,6 +8,11 @@
         xmlns:local="clr-namespace:GenCalc"
         mc:Ignorable="d"
         Title="GenCalc  " Height="700" Width="800" WindowStartupLocation="CenterScreen" FontSize="11" Icon="/GenCalc;component/resources/wave.png" KeyDown="MainWindow_KeyDown">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Delete"
+                  Executed="DeleteCmdExecuted"
+                  CanExecute="DeleteCmdCanExecute"/>
+    </Window.CommandBindings>
     <DockPanel x:Name="mainPanel" Margin="0">
         <StatusBar x:Name="statusBar" Height="22" VerticalAlignment="Top" DockPanel.Dock="Bottom" Margin="0,0,0,0">
             <StatusBarItem>
@@ -107,7 +112,13 @@
                         <Label x:Name="labelPathProject" Content="Path: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
                         <Label x:Name="labelSelectedAcceleration" Content="Accel:" HorizontalAlignment="Left" Margin="0" Grid.Row="1" VerticalAlignment="Center" FontWeight="Normal" />
                         <TextBox x:Name="textBoxProjectPath" Grid.Column="1" Margin="5,0,5,5" TextWrapping="Wrap" FontWeight="Normal" VerticalAlignment="Center" IsReadOnly="True"/>
-                        <TextBox x:Name="textBoxSelectedAcceleration" Grid.Column="1" Margin="5,0" Grid.Row="1" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True" />
+                        <TextBox x:Name="textBoxSelectedAcceleration" Grid.Column="1" Margin="5,0" Grid.Row="1" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True">
+                            <TextBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Clear" Click="removeAcceleration" Command="Delete"/>
+                                </ContextMenu>
+                            </TextBox.ContextMenu>
+                        </TextBox>
                         <Button x:Name="buttonOpenProject" Grid.Column="2" Margin="0,0,0,5" VerticalAlignment="Center" HorizontalAlignment="Center" Click="buttonOpenProject_Click">
                             <StackPanel Width="14" Height="14">
                                 <StackPanel.Background>
@@ -136,7 +147,13 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Label x:Name="labelForces" Content="Forces: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
-                        <ListBox x:Name="listBoxForces" Grid.Column="1" BorderThickness="1" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal" Margin="5,0,5,5"/>
+                        <ListBox x:Name="listBoxForces" Grid.Column="1" BorderThickness="1" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal" Margin="5,0,5,5">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Clear" Click="removeForces" Command="Delete"></MenuItem>
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
+                        </ListBox>
                         <Button x:Name="buttonSelectForces" Grid.Column="2" HorizontalAlignment="Center" Margin="0,0,0,5" VerticalAlignment="Center" Click="buttonSelectForces_Click">
                             <StackPanel Width="14" Height="14" VerticalAlignment="Center">
                                 <StackPanel.Background>
@@ -145,7 +162,13 @@
                             </StackPanel>
                         </Button>
                         <Label x:Name="labelResponses" Content="Responses: " Grid.Row="1" Margin="0,0,0,5" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Normal"/>
-                        <ListBox x:Name="listBoxResponses" Grid.Column="1" Grid.Row="1" BorderThickness="1" Margin="5,0,5,5" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal"/>
+                        <ListBox x:Name="listBoxResponses" Grid.Column="1" Grid.Row="1" BorderThickness="1" Margin="5,0,5,5" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Clear" Click="removeResponses" Command="Delete"></MenuItem>
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
+                        </ListBox>
                         <Button x:Name="buttonSelectResponses" Grid.Column="2" Grid.Row="1" Margin="0,0,0,5" HorizontalAlignment="Center" VerticalAlignment="Center" Click="buttonSelectResponses_Click">
                             <StackPanel Width="14" Height="14" VerticalAlignment="Center">
                                 <StackPanel.Background>

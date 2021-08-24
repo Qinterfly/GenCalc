@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Input;
 using MahApps.Metro.Controls;
 using GenCalc.Core.Project;
 using GenCalc.Core.Numerical;
@@ -176,10 +177,7 @@ namespace GenCalc
             int numLevels = (int)numericLevelsNumber.Value;
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
             if (mSelectedModalSet != null)
-            {
-                if (mSelectedModalSet.Forces != null && mSelectedModalSet.Responses != null && mSelectedModalSet.ReferenceResponse == null)
-                    mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
-            }
+                mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
             ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries,
                                                                                   numLevels, numInterpolationPoints,
                                                                                   numericResonanceFrequencyReal.Value, numericResonanceFrequencyImaginary.Value, numericResonanceFrequencyAmplitude.Value,
@@ -254,6 +252,12 @@ namespace GenCalc
             // Modal data
             listBoxForces.Items.Clear();
             listBoxResponses.Items.Clear();
+            // Calculation data
+            clearCalculationData();
+        }
+
+        public void clearCalculationData()
+        {
             // Calculation pararmeters
             numericLeftFrequencyBoundary.Value = null;
             numericRightFrequencyBoundary.Value = null;

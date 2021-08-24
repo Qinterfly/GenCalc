@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Controls;
 using Microsoft.Win32;
 using MahApps.Metro.Controls;
 using GenCalc.Gui.Plot;
@@ -174,6 +175,59 @@ namespace GenCalc
                 mDecrementGraphModel.clearPointSelection();
                 clearStatus();
             }
+        }
+
+        private void removeAcceleration(object sender, RoutedEventArgs e)
+        {
+            if (mSelectedAcceleration != null)
+            {
+                mSelectedAcceleration = null;
+                textBoxSelectedAcceleration.Text = "";
+                clearCalculationData();
+            }
+        }
+
+        private void removeForces(object sender, RoutedEventArgs e)
+        {
+            if (mSelectedModalSet.Forces != null)
+            {
+                mSelectedModalSet.Forces = null;
+                listBoxForces.Items.Clear();
+                calculateAndPlot();
+            }
+        }
+
+        private void removeResponses(object sender, RoutedEventArgs e)
+        {
+            if (mSelectedModalSet.Responses != null)
+            {
+                mSelectedModalSet.Responses = null;
+                listBoxResponses.Items.Clear();
+                calculateAndPlot();
+            }
+        }
+
+        void DeleteCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            object source = e.OriginalSource;
+            Type type = source.GetType();
+            string content = "";
+            if (type.Name.Equals("TextBox"))
+            {
+                TextBox textBox = (TextBox)source;
+                content = textBox.Text;
+            }
+            if (type.Name.Equals("ListBoxItem"))
+            {
+                ListBoxItem listBox = (ListBoxItem)source;
+                content = listBox.Content.ToString();
+            }
+            e.CanExecute = content.Length != 0;
+        }
+
+        void DeleteCmdExecuted(object target, ExecutedRoutedEventArgs e)
+        {
+
         }
     }
 }

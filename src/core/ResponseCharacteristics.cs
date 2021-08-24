@@ -72,8 +72,11 @@ namespace GenCalc.Core.Numerical
                 CubicSpline splineGeneralForce = calculateGeneralForce(modalSet);
                 if (splineGeneralForce != null) 
                 { 
-                    CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, modalSet.ReferenceResponse.Amplitude);
-                    calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
+                    if (frequency.Length == modalSet.ReferenceResponse.Amplitude.Length)
+                    {
+                        CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, modalSet.ReferenceResponse.Amplitude);
+                        calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
+                    }
                 }
             }
         }
