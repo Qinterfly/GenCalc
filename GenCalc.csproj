@@ -190,8 +190,8 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
     <COMReference Include="LMSTestLabAutomation">
-      <Guid>{6464595D-9D7B-440A-A709-5CA760385365}</Guid>
-      <VersionMajor>120</VersionMajor>
+      <Guid>{C0AB99A4-8BB1-41CF-BA67-2B3240B4C124}</Guid>
+      <VersionMajor>150</VersionMajor>
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
