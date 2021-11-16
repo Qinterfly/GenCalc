@@ -23,6 +23,7 @@ namespace GenCalc.Core.Project
             // Retrieve properties
             mPath = filePath;
             mDatabase = mApp.ActiveBook.Database();
+            mUnitSystem = mApp.UnitSystem;
         }
 
         public bool isOpened() { return mApp != null; }
@@ -51,7 +52,8 @@ namespace GenCalc.Core.Project
                         if (signal != null)
                         {
                             Response response = acquireResponse(pathSignal, signal, signal.Properties);
-                            selectedSignals.Add(response);
+                            if (response != null)
+                                selectedSignals.Add(response);
                         }
                     }
                 }
@@ -63,7 +65,8 @@ namespace GenCalc.Core.Project
                         if (signal != null)
                         {
                             Response response = acquireResponse(pathSignal, signal, signal.Properties);
-                            selectedSignals.Add(response);
+                            if (response != null)
+                                selectedSignals.Add(response);
                         }
                     }
                 }
@@ -92,13 +95,24 @@ namespace GenCalc.Core.Project
         {
             ResponseType type = ResponseType.kUnknown;
             string measuredQuantity = properties["Measured quantity"];
-            if (measuredQuantity.Equals("Acceleration"))
+            // Determination of the type of the signal
+            // 15A version
+            if (measuredQuantity != null)
             {
-                type = ResponseType.kAccel;
+                if (measuredQuantity.Equals("Acceleration"))
+                    type = ResponseType.kAccel;
+                else if (measuredQuantity.Equals("Force"))
+                    type = ResponseType.kForce;
             }
-            else if (measuredQuantity.Equals("Force"))
+            // 12A version
+            else
             {
-                type = ResponseType.kForce;
+                IQuantity quantityY = properties["Y axis unit"];
+                string unitY = mUnitSystem.Label(quantityY);
+                if (unitY.Equals("g"))
+                    type = ResponseType.kAccel;
+                if (unitY.Equals("N"))
+                    type = ResponseType.kForce;
             }
             if (type == ResponseType.kUnknown)
                 return null;
@@ -127,5 +141,6 @@ namespace GenCalc.Core.Project
         private string mPath;
         private Application mApp = null;
         private IDatabase mDatabase = null;
+        private IUnitSystem mUnitSystem = null;
     }
 }
