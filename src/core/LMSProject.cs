@@ -118,6 +118,8 @@ namespace GenCalc.Core.Project
                 return null;
             double[] frequency = (double[])signal.XValues;
             double[,] data = (double[,])signal.YValues; // Units: m/s^2 or (m/s^2)/N 
+            if (frequency.Length <= 1)
+                return null;
             // Retrieving additional info
             double sign = 1.0;
             if (properties["Point direction sign"] == "-")
