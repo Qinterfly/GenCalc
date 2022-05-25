@@ -1,0 +1,66 @@
+
+% -- Переименование рубрикации -------------------------------------------------
+
+\renewcommand{\contentsname}{Содержание} 				  % Оглавление -> Содержание
+\renewcommand{\bibname}{Список использованных источников} % Литература -> Список использованных источников
+
+% -- Главы и секции без нумерации ---------------------------------------------
+
+\newcommand{\AddNoTocChap}[2]{ % Использование глав без нумерации
+\def\temp{#2}\ifx\temp\empty % Проверка типа главы
+	\chapter*{#1}  % Введение, заключение...
+  	\addcontentsline{toc}{chapter}{#1} \fancyhead{} % Сброс заголовка хедера
+\else
+  	\chapter*{#1 \\ #2}  % Приложение
+  	\addcontentsline{toc}{chapter}{#1. #2} \fancyhead{} % Сброс заголовка хедера
+\fi
+\fancyhead[L]{\ifodd\value{page} \bfseries \MakeUppercase{#1} \fi} % Нечетные страницы
+\fancyhead[R]{\ifodd\value{page} \else \bfseries \MakeUppercase{#1} \fi} % Четные страницы
+}
+
+% -- Создание математических формул -------------------------------------------
+
+% Частная производная n-го порядка по одному аргументу
+\newcommand{\partDer}[3]{ 
+\ifthenelse{ \equal{#3}{1} \OR \equal{#3}{} }
+	{ \frac{\partial #1}{\partial #2} }
+	{ \frac{\partial^{#3} #1}{\partial #2^{#3}} }
+}
+% Верхнее подчеркивание
+\newcommand{\ol}[1]{ 
+ 	\overline{#1}
+}
+\setlength{\abovedisplayskip}{1ex} % Вертикальный отступ перед формульным окружением
+\setlength{\belowdisplayskip}{1ex} % Вертикальный отступ после формульного окружения
+
+% -- Сокращения ---------------------------------------------------------------
+
+% Формулы
+\newcommand{\nfrac}{\nicefrac}        % Однострочная дробь
+\newcommand{\rarr}{$\rightarrow$ }    % Стрелка вправо
+\newcommand{\matr}[1]{\mathbf{#1}}    % Жирные матричные символы
+\newcommand{\vphi}{\varphi}        	  % Phi
+\newcommand{\R}{\mathbb{R}}           % Множество
+\newcommand{\imag}{\operatorname{Im}} % Мнимая часть числа
+\newcommand{\real}{\operatorname{Re}} % Действительная часть числа
+
+% Рисунки
+\newcommand{\figrefb}[1]{рис.~\ref{#1}} % Без скобок
+\newcommand{\figref}[1]{(\figrefb{#1})} % Со скобками
+% Таблицы
+\newcommand{\tabrefb}[1]{табл.~\ref{#1}} % Без скобок
+\newcommand{\tabref}[1]{(\tabrefb{#1})}  % Со скобками
+% Листинги
+\newcommand{\listref}[1]{(лист.~\ref{#1}, c.~\pageref{#1})} 
+
+% -- Обновление fancy ---------------------------------------------------------
+
+\newcommand{\updateFancy}{ 
+	\pagestyle{main}
+}
+
+% -- Установки по умолчанию ---------------------------------------------------
+
+\updateFancy % Стиль нумерации
+
+% -----------------------------------------------------------------------------

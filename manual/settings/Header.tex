@@ -1,0 +1,294 @@
+
+% -- Настройки класса документа -------------------------------------------
+
+\documentclass[12pt, a4paper, oneside, final]{book} % Класс документа
+\usepackage{cmap} 								    % Поиск и копирование текста
+\usepackage[T2A]{fontenc} 							% Специалньые символы
+\usepackage[utf8]{inputenc} 						% Кодировка
+\usepackage[english, russian]{babel} 				% Используемые языки
+
+% -- Настройка шрифтов ----------------------------------------------------
+
+\usepackage[scaled = 0.96, sups]{XCharter} 			 % Bitstream Charter ("< \ "> -- кавычки)
+\usepackage[scaled = 1.04, varqu, varl]{inconsolata} 
+\usepackage[type1]{cabin} 							 % Шрифт для текста
+\usepackage[vvarbb, scaled = 1.12]{newtxmath} 		 % Шрифт для формул (libertine)
+\usepackage[cal = boondoxo]{mathalfa} 				 % Гарнитура шрифта для формул
+ 
+% -- Загрузка библиотек ---------------------------------------------------
+
+%\usepackage{amssymb}
+\usepackage{amsmath, amsfonts, latexsym} 				% Математическая символика
+\usepackage{geometry} 					 				% Поля
+\usepackage{setspace}                    				% Коррекция интервалов
+\usepackage{indentfirst}                 				% Начало главы с красной строки
+% \usepackage[none]{hyphenat}            				% Отключение переноса слов
+\usepackage{graphicx}                    				% Графика
+\usepackage{titlesec}                    				% Редактирование section и chapter
+\usepackage{fancyhdr, fancybox}          				% Редактирование колонтитулов
+\usepackage{listings}                    				% Оформление листинга кода с подсветкой
+\usepackage{color}                       				% Цвета
+\usepackage{hyperref}                    				% Гиперссылки в PDF
+\usepackage{nicefrac}                    				% Симпатичные дроби
+\usepackage{float}                       				% Настройка плавающего окружения
+\usepackage{rotating}                    				% Поворот плавающего окружения
+\usepackage{ulem}                        				% Настраиваемое подчеркивание текста
+\usepackage{titlesec}                    				% Настройка отображения заголовков
+\usepackage{enumitem}                    				% Настройка форматирования нумерованных списков
+\usepackage{algorithm}                   				% Использование псевдокодов
+\usepackage{algpseudocode}                              % Поддержка русского языка в псевдокодах
+\usepackage{tikz}                        				% Создание векторной графики
+\usepackage{xfp}                         			    % Поддержка вычислений в коде
+\usepackage{framed}                     			    % Выделение блоком текста
+\usepackage{pgfplots}                    				% Построение графиков
+\usepackage{stanli}                      				% Пакет Tikz для отрисовки конструкций
+\usepackage{tabularray}                  				% Таблицы с гибким форматированием
+\usepackage{cite}										% Группировка источников при цитировании
+\usepackage[labelfont = {it}, textfont = {it}]{caption} % Настройка подписей
+\usepackage[nottoc, notlof, notlot]{tocbibind} 			% Отображение списка источников в оглавлении
+\graphicspath{{images//}} 								% Путь для картинок (//==рекурсивный поиск директорий)
+
+% -- Опции форматирования ---------------------------------------------------	
+
+\geometry{left = 3cm, right = 1.5cm, top = 2cm, bottom = 2cm} % Настройки полей
+\frenchspacing 												  % Одинаковые пробелы
+\renewcommand{\baselinestretch}{1.3}					      % Межстрочный интервал
+\parindent = 1.25cm 										  % Отступ абзацный
+\hyphenpenalty = 5000 										  % Пороговое значение штрафа для переноса слова
+% \hbadness = 10000 										  % Отключение предупреждения о проблемных блоках (при hypehenat==on)
+\sloppy 													  % Контроль переполнения блоков
+
+% -- Работа с таблицами -----------------------------------------------------
+
+% Tabular и Longtable
+\DeclareCaptionLabelFormat{gost-table}{\hfill #1~#2}    % Указатель
+\DeclareCaptionTextFormat{gost-table}{\centering #1 \\} % Текст
+\captionsetup[table]{textformat = gost-table, labelformat = gost-table, singlelinecheck = off, labelsep = newline} % Задание формата
+
+% Tabularrray
+	% Стиль
+\NewTblrTheme{regularTable}{
+	\SetTblrStyle{caption-tag}{font=\itshape}
+	\SetTblrStyle{caption-text}{font=\itshape}
+}
+\UseTblrLibrary{varwidth}
+	% Настройки заголовка первого блока таблиц
+\DefTblrTemplate{caption-sep}{default}{}
+\DefTblrTemplate{caption}{default}{
+\par\hfill
+	\UseTblrTemplate{caption-tag}{default}
+	\UseTblrTemplate{caption-sep}{default}
+	\newline\centering
+    \UseTblrTemplate{caption-text}{default}	
+   	\par
+}
+	% Настройки перенесенного заголовка
+\DefTblrTemplate{contfoot-text}{default}{}
+\DefTblrTemplate{conthead-text}{default}{(продолжение)}
+\DefTblrTemplate{capcont}{default}{
+\par\hfill
+	\UseTblrTemplate{caption-tag}{default}
+	\UseTblrTemplate{caption-sep}{default}
+	\newline\centering
+    \UseTblrTemplate{caption-text}{default}	
+    \UseTblrTemplate{conthead-text}{default}
+\par
+}
+
+% -- Нумерация страниц ------------------------------------------------------
+
+% Смена заголовков глав и секций
+\pagestyle{fancy} % Выбор системного стиля
+\renewcommand{\chaptermark}[1]{\markboth{\itshape\thechapter.\ #1}{}} % Главы
+\renewcommand{\sectionmark}[1]{\markright{\itshape\thesection.\ #1}}  % Секции
+
+% Базовый стиль (начало глав)
+\fancypagestyle{plain}{
+	\fancyhf{} 						   % Очистка всех хедеров и футеров
+	\fancyfoot[C]{-- \thepage\ --} 	   % Нумерация страницы
+	\renewcommand{\headrulewidth}{0pt} % Толщина разделительной полосы сверху
+	\renewcommand{\footrulewidth}{0pt} % Толщина разделительной полосы снизу
+}
+ % Основной стиль
+\fancypagestyle{main}{
+	\fancyhf{}											   % Очистка всех хедеров и футеров
+	% Положение глав
+	\fancyhead[L]{\ifodd\value{page} \leftmark \fi} 	   % Нечетные страницы
+	\fancyhead[R]{\ifodd\value{page} \else \rightmark \fi} % Четные страницы
+	\fancyfoot[C]{-- \thepage\ --} 						   % Нумерация страницы
+	\renewcommand{\headrulewidth}{0.2pt} 				   % Толщина разделительной полосы сверху
+	\renewcommand{\footrulewidth}{0pt} 					   % Толщина разделительной полосы снизу
+}
+
+% Задание дополнительных стилей
+	% Стиль нумерации без хедера
+\fancypagestyle{onlyNum}{ 
+	\fancyhf{} 						   % Очистка всех хедеров и футеров
+	\fancyfoot[C]{-- \thepage\ --}     % Нумерация страницы
+	\renewcommand{\headrulewidth}{0pt} % Толщина разделительной полосы сверху
+	\renewcommand{\footrulewidth}{0pt} % Толщина разделительной полосы снизу
+}
+	% Стиль нумерации без глав
+\fancypagestyle{onlyRightMark}{ 
+	\fancyhf{} 														% Очистка всех хедеров и футеров
+	\fancyfoot[C]{-- \thepage\ --} 								    % Нумерация страницы
+	\fancyhead[R]{\ifodd\value{page} \else \bfseries\rightmark \fi} % Четные страницы
+	\fancyfoot[C]{\thepage} 										% Нумерация страницы
+}
+
+%  -- Рубрикация -------------------------------------------------------------
+
+\makeatletter % Используем символ @ как букву
+% Запрет переносов в названиях секций
+\renewcommand{\section}{\@startsection{section}{1}{0pt}{1ex}{1ex}{\centering\hyphenpenalty=10000\normalfont\bfseries}}
+
+% Смена заголовка для команды \chapter и запрет переноса слов
+\titleformat{\chapter}{\centering\hyphenpenalty=10000\normalfont\large\bfseries}{\thechapter. }{0pt}{\large}
+\renewcommand\@biblabel[1]{#1.} % Точка перед источниками литературы
+\makeatother
+\titlespacing*{\chapter}{0pt}{-50pt}{10pt} % Вертикальные отступы от названия главы
+\titleformat*{\subsection}{\normalfont\bfseries} % Подраздел
+
+% Кириллический алфавит
+\makeatletter
+\renewcommand*{\@alph}[1]{% 
+  \ifcase#1\or а\or б\or в\or г\or
+    д\or е\or ё\or ж\or з\or и\or й\or
+    к\or л\or м\or н\or о\or п\or р\or с\or т\or
+    у\or ф\or х\or ц\or ч\or
+    ш\or щ\or ъ\else\@ctrerr\fi
+}
+\renewcommand*{\@Alph}[1]{% 
+  \ifcase#1\or А\or Б\or В\or Г\or
+    Д\or E\or Ё\or Ж\or З\or И\or Й\or
+    К\or Л\or М\or Н\or О\or П\or Р\or С\or Т\or
+    У\or Ф\or Х\or Ц\or Ч\or
+    Ш\or Щ\or Ъ\else\@ctrerr\fi
+}
+\makeatother
+
+%  -- Листинг кода -------------------------------------------------------------
+
+% Смена названия блока псевдокода
+\makeatletter
+\renewcommand*{\ALG@name}{Алгоритм}
+\makeatother
+
+% Определение именнованных цветов
+\definecolor{mygreen}{RGB}{28, 172, 0} 
+\definecolor{mylilas}{RGB}{170, 55, 241} 
+	
+%  Общие настройки
+\lstset{
+	basicstyle = \small\normalfont,    % Размер и начертание шрифта для подсветки кода
+	numbers = left,                    % Где поставить нумерацию строк (слева\справа)
+	numberstyle = \tiny,               % Размер шрифта для номеров строк
+	stepnumber = 1,                    % Размер шага между двумя номерами строк
+	numbersep = 5pt,                   % Как далеко отстоят номера строк от подсвечиваемого кода
+	% backgroundcolor = \color{white}, % Цвет фона подсветки
+	showspaces = false,                % Показывать или нет пробелы специальными отступами
+	showstringspaces = false,          % Показывать или нет пробелы в строках
+	showtabs = false,                  % Показывать или нет табуляцию в строках
+	frame = tb,                 	   % Рисовать рамку вокруг кода
+	tabsize = 2,                       % Размер табуляции по умолчанию равен 2 пробелам
+	captionpos = t,                    % Позиция заголовка вверху [t] или внизу [b] 
+	breaklines = true,                 % Автоматически переносить строки (да\нет)
+	breakatwhitespace = false,         % Переносить строки только если есть пробел
+	texcl = true, 			           % Поддержка русских символов (LaTeX коммент.)
+}
+
+% Стили языков
+	% Matlab 
+\lstdefinestyle{Matlab}{ 
+	language = Matlab,                                        % Выбор языка для подсветки
+	morekeywords = {matlab2tikz},							  % Подгрузка ключевых слов
+	keywordstyle = \color{blue},                              % Подсветка ключевых слов
+	morekeywords = [2]{1}, keywordstyle = [2]{\color{black}}, % Стиль ключевых слов
+	identifierstyle = \color{black},						  % Фильтрация стиля
+	stringstyle = \color{mylilas},						      % Цвет строк
+	commentstyle = \color{mygreen},						      % Цвет комментариев
+	showstringspaces = false, 							      % Пробельный символ
+	numbers = left,									          % Нумерация слева
+	numberstyle = {\tiny \color{black}},					  % Шрифт нумерации
+	numbersep = 9pt, 									      % Отступ нумерации
+	emph = [1]{for,end,break}, emphstyle = [1]\color{red}, 	  % Акцент на словах
+}	
+
+	% Tree
+\lstdefinestyle{tree}{
+	language = Matlab, 
+	stringstyle = \color{mylilas},	% Цвет строк
+	commentstyle = \color{mygreen},	% Цвет комментариев
+	showstringspaces = false, 		% Пробельный символ
+	numbers = none,					% Нумерация слева	
+    literate =						% Замена символов дерева утилиты tree
+    {├}{{\smash{\raisebox{-1ex}{\rule{1pt}{\baselineskip}}}\raisebox{0.5ex}{\rule{1ex}{1pt}}}}1 
+    {─}{{\raisebox{0.5ex}{\rule{1.5ex}{1pt}}}}1 
+    {└}{{\smash{\raisebox{0.5ex}{\rule{1pt}{\dimexpr\baselineskip-1.5ex}}}\raisebox{0.5ex}{\rule{1ex}{1pt}}}}1,
+    emph = [1]{Signals, Results, LICENSE, Geometry, Distortion field, Export_fig},emphstyle=[1]\color{red}, 	  % Акцент на словах
+}
+
+	% Fortran
+\lstdefinestyle{Fortran}{ 
+	language = Fortran,                                       % Выбор языка для подсветки
+	breaklines = true,									      % Пропуск линий
+	keywordstyle = \color{blue},                              % Подсветка ключевых слов
+	morekeywords = [2]{1}, keywordstyle = [2]{\color{black}}, % Стиль ключевых слов
+	identifierstyle = \color{black},						  % Фильтрация стиля
+	stringstyle = \color{mylilas},						      % Цвет строк
+	commentstyle = \color{mygreen},						      % Цвет комментариев
+	showstringspaces = false, 							      % Пробельный символ
+	numbers = left,									          % Нумерация слева
+	numberstyle = {\tiny \color{black}},					  % Шрифт нумерации
+	numbersep= 9pt, 									      % Отступ нумерации
+	emph = [1]{for, end, break}, emphstyle = [1]\color{red},  % Акцент на словах
+}	
+
+% -- Работа с графикой --------------------------------------------------------
+
+\usetikzlibrary{shadows, arrows}          % Использование теней и стрелок
+\usetikzlibrary{positioning}              % Позиционирование
+\usetikzlibrary{patterns}                 % Паттерны заливки
+\usetikzlibrary{decorations.pathmorphing} % Декорации
+\usetikzlibrary{calc}                     % Расчетная библиотека
+\pgfplotsset{compat = newest}             % Версия библиотеки для отрисовки графиков
+\usetikzlibrary{trees}   				  % Деревья
+
+% Чертежные виды
+\tikzstyle{isometric} = [x = {(0.710cm, -0.410cm)}, y = {(0cm, 0.820cm)}, z = {(-0.710cm,-0.410cm)}]
+\tikzstyle{dimetric}  = [x = {(0.935cm, -0.118cm)}, y = {(0cm, 0.943cm)}, z = {(-0.354cm, -0.312cm)}]
+\tikzstyle{dimetric2} = [x = {(0.935cm, -0.118cm)}, z = {(0cm, 0.943cm)}, y = {(+0.354cm, +0.312cm)}]
+\tikzstyle{trimetric} = [x = {(0.926cm, -0.207cm)},y = {(0cm, 0.837cm)}, z = {(-0.378cm, -0.507cm)}]
+
+% Стили
+	% Оси и размеры
+\tikzstyle{dim<->} = [thick, latex-latex]              % Двусторонний размер
+\tikzstyle{dim->} = [-latex] 						   % Односторонний размер
+\tikzstyle{axis} = [thick, -latex', color = black]     % Линия оси координат
+\tikzstyle{symLine} = [thick, dash dot, color = black] % Линия симметрии
+	% Штриховка
+\tikzstyle{hatching1} = [pattern = north east lines]   % Нельзя переопределять hatching из stanli (!)
+	% Вектора
+\tikzstyle{vector} = [very thick, -latex]
+
+%  -- Дополнительные математические операторы ---------------------------------
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%  -- Навигация ---------------------------------------------------------------
+
+% Гиперссылки
+\hypersetup{ 
+    colorlinks = true, 	 % Включить цветные ссылки (print == false)
+    linkcolor = blue,	 % Цвет ссылки на объект
+    filecolor = magenta, % Цвет ссылки на файл    
+    urlcolor = cyan,	 % Цвет ссылки на сайт
+    citecolor = green 	 % Цвет ссылки на цитату
+}
+
+% -- Завершение статической части преамбулы ------------------------------------
+
+\csname endofdump \endcsname
+
+% ------------------------------------------------------------------------------

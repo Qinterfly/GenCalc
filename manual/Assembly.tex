@@ -1,0 +1,21 @@
+%%&settings/Header
+\input{settings/Header}
+
+%% Сборка документа
+\begin{document}
+	% -- Макросы ----------------------------------------------------------
+	\input{settings/Commands} 
+	% -- Титульный лист ---------------------------------------------------
+	\input{Title}
+	% -- Аннотация --------------------------------------------------------
+	\newpage
+	\pagestyle{onlyNum}
+	\setcounter{page}{2}
+	\input{Abstract}
+	% -- Оглавление ------------------------------------------------------- 
+	\tableofcontents 
+	% -- Текст работы -----------------------------------------------------	
+	\updateFancy	
+	\input{Description}
+	\input{Instruction}
+\end{document}
