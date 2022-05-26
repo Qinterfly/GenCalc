@@ -86,7 +86,7 @@ namespace GenCalc
         {
             clearStatus();
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "LMS Test.Lab 15A Project (*.lms)|*.lms";
+            openFileDialog.Filter = "LMS Test.Lab Project (*.lms)|*.lms";
             openFileDialog.FilterIndex = 1;
             openFileDialog.RestoreDirectory = true;
             if (openFileDialog.ShowDialog() == true)
