@@ -69,5 +69,21 @@ namespace GenCalc.Core.Numerical
             }
             return roots;
         }
+
+        public static void dictionaryToVectors(in Dictionary<double, double> data, out double[] X, out double[] Y)
+        {
+            int numData = data == null ? 0 : data.Count;
+            X = new double[numData];
+            Y = new double[numData];
+            if (numData == 0)
+                return;
+            int i = 0;
+            foreach (double key in data.Keys)
+            {
+                X[i] = key;
+                Y[i] = data[key];
+                ++i;
+            }
+        }
     }
 }

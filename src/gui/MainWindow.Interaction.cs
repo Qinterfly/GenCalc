@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Controls;
 using Microsoft.Win32;
 using MahApps.Metro.Controls;
 using GenCalc.Gui.Plot;
+using GenCalc.IO;
 
 namespace GenCalc
 {
@@ -116,6 +116,28 @@ namespace GenCalc
             processSelectionWithStatus(selectResponses(), "The responses were selected via TestLab", "An error occured while selecting responses");
         }
 
+        private void buttonExportExcel_Click(object sender, RoutedEventArgs e)
+        {
+            clearStatus();
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = "Excel document (*.xlsx)|*.xlsx";
+            dialog.FilterIndex = 1;
+            dialog.RestoreDirectory = true;
+            if (dialog.ShowDialog() == true)
+            { 
+                try
+                {   
+                    ExcelExporter exporter = new ExcelExporter(mCharacteristics, mSelectedModalSet);
+                    exporter.write(dialog.FileName);
+                    setStatus("Excel document successfully created");
+                }
+                catch (System.Runtime.InteropServices.COMException exc)
+                {
+                    setStatus(exc.ToString());
+                }
+            }
+        }
+
         private void processSelectionWithStatus(bool resFun, string successMessage, string errorMessage)
         {
             if (resFun)
@@ -160,6 +182,7 @@ namespace GenCalc
             string labelX = coordinates.Item1.ToString(format);
             string labelY = coordinates.Item2.ToString(format);
             setStatus($"Selected point: ({labelX}, {labelY})");
+            Clipboard.SetText(labelY, TextDataFormat.Text);
         }
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)

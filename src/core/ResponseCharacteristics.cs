@@ -23,15 +23,17 @@ namespace GenCalc.Core.Numerical
         {
             if (acceleration == null)
                 return;
+            // Perform the double integration of the acceleration signal
+            Response displacement = acceleration.convert(ResponseType.kDisp);
             // Correct limits of levels and frequencies
-            if (!correctFrequencyBoundaries(acceleration, ref frequencyBoundaries))
+            if (!correctFrequencyBoundaries(displacement, ref frequencyBoundaries))
                 return;
             correctLevelsBoundaries(ref levelsBoundaries);
-            // Interpolate the response
-            double[] frequency = acceleration.Frequency;
-            CubicSpline splineRealAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.RealPart);
-            CubicSpline splineImagAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.ImaginaryPart);
-            CubicSpline splineAmplitudeAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.Amplitude);
+            // Interpolate the displacement
+            double[] frequency = displacement.Frequency;
+            CubicSpline splineRealDisplacement = CubicSpline.InterpolateNatural(frequency, displacement.RealPart);
+            CubicSpline splineImagDisplacement = CubicSpline.InterpolateNatural(frequency, displacement.ImaginaryPart);
+            CubicSpline splineAmplitudeDisplacement = CubicSpline.InterpolateNatural(frequency, displacement.Amplitude);
             // Create mesh of levels
             double startLevel = levelsBoundaries.Item1;
             double endLevel = levelsBoundaries.Item2;
@@ -43,28 +45,28 @@ namespace GenCalc.Core.Numerical
             double startFrequency = acceleration.getFrequencyValue();
                 // Real
             if (manualFrequencyReal == null)
-                ResonanceFrequencyReal = retrieveResonanceFrequency(splineRealAcceleration, false, frequencyBoundaries, numInterpolationPoints, startFrequency);
+                ResonanceFrequencyReal = retrieveResonanceFrequency(splineRealDisplacement, false, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
                 ResonanceFrequencyReal = (double)manualFrequencyReal;
                 // Imaginary
             if (manualFrequencyImaginary == null)
-                ResonanceFrequencyImaginary = retrieveResonanceFrequency(splineImagAcceleration, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
+                ResonanceFrequencyImaginary = retrieveResonanceFrequency(splineImagDisplacement, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
                 ResonanceFrequencyImaginary = (double)manualFrequencyImaginary;
                 // Amplitude
             if (manualFrequencyAmplitude == null)
-                ResonanceFrequencyAmplitude = retrieveResonanceFrequency(splineAmplitudeAcceleration, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
+                ResonanceFrequencyAmplitude = retrieveResonanceFrequency(splineAmplitudeDisplacement, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
                 ResonanceFrequencyAmplitude = (double)manualFrequencyAmplitude;
             // Calculate decrements
             Decrement = new DecrementData();
-            ResonanceRealPeak = splineRealAcceleration.Interpolate(ResonanceFrequencyReal);
-            ResonanceImaginaryPeak = splineImagAcceleration.Interpolate(ResonanceFrequencyImaginary);
-            ResonanceAmplitudePeak = splineAmplitudeAcceleration.Interpolate(ResonanceFrequencyAmplitude);
+            ResonanceRealPeak = splineRealDisplacement.Interpolate(ResonanceFrequencyReal);
+            ResonanceImaginaryPeak = splineImagDisplacement.Interpolate(ResonanceFrequencyImaginary);
+            ResonanceAmplitudePeak = splineAmplitudeDisplacement.Interpolate(ResonanceFrequencyAmplitude);
             // Decrements
-            calculateDecrement(DecrementType.kImaginary, splineImagAcceleration, frequencyBoundaries, numInterpolationPoints);
-            calculateDecrement(DecrementType.kAmplitude, splineAmplitudeAcceleration, frequencyBoundaries, numInterpolationPoints);
-            calculateDecrementByReal(splineRealAcceleration, frequencyBoundaries, numInterpolationPoints);
+            calculateDecrement(DecrementType.kImaginary, splineImagDisplacement, frequencyBoundaries, numInterpolationPoints);
+            calculateDecrement(DecrementType.kAmplitude, splineAmplitudeDisplacement, frequencyBoundaries, numInterpolationPoints);
+            calculateDecrementByReal(splineRealDisplacement, frequencyBoundaries, numInterpolationPoints);
             // Modal data
             if (modalSet != null && modalSet.isCorrect())
             {
@@ -74,11 +76,19 @@ namespace GenCalc.Core.Numerical
                 { 
                     if (frequency.Length == modalSet.ReferenceResponse.Amplitude.Length)
                     {
-                        CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, modalSet.ReferenceResponse.Amplitude);
+                        Response referenceDisplacement = modalSet.ReferenceResponse.convert(ResponseType.kDisp);
+                        CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, referenceDisplacement.Amplitude);
                         calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
                     }
                 }
             }
+            // Convert back the resonance peaks
+            CubicSpline splineRealAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.RealPart);
+            CubicSpline splineImagAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.ImaginaryPart);
+            CubicSpline splineAmplitudeAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.Amplitude);
+            ResonanceRealPeak = splineRealAcceleration.Interpolate(ResonanceFrequencyReal);
+            ResonanceImaginaryPeak = splineImagAcceleration.Interpolate(ResonanceFrequencyImaginary);
+            ResonanceAmplitudePeak = splineAmplitudeAcceleration.Interpolate(ResonanceFrequencyAmplitude);
         }
 
         private bool correctFrequencyBoundaries(in Response response, ref PairDouble boundaries)
@@ -257,8 +267,8 @@ namespace GenCalc.Core.Numerical
                     omegaI = freqI * kTwoPi;
                     omegaI2 = Math.Pow(omegaI, 2.0);
                     omegaI4 = Math.Pow(omegaI, 4.0);
-                    // Acceleration
-                    ampI = amplitude.Interpolate(freqI) / omegaI2;
+                    // Displacement
+                    ampI = amplitude.Interpolate(freqI);
                     ampI2 = Math.Pow(ampI, 2.0);
                     ampI4 = Math.Pow(ampI, 4.0);
                     // Force
@@ -271,8 +281,8 @@ namespace GenCalc.Core.Numerical
                         omegaJ = freqJ * kTwoPi;
                         omegaJ2 = Math.Pow(omegaJ, 2.0);
                         omegaJ4 = Math.Pow(omegaJ, 4.0);
-                        // Acceleration
-                        ampJ = amplitude.Interpolate(freqJ) / omegaJ2;
+                        // Displacement
+                        ampJ = amplitude.Interpolate(freqJ);
                         ampJ2 = Math.Pow(ampJ, 2.0);
                         ampJ4 = Math.Pow(ampJ, 4.0);
                         // Force

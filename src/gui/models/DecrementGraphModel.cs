@@ -29,34 +29,20 @@ namespace GenCalc.Gui.Plot
             if (!isDataSet())
                 return;
             // Imaginary 
-            dataToVectors(mData.Imaginary, out double[] XImag, out double[] YImag);
+            Utilities.dictionaryToVectors(mData.Imaginary, out double[] XImag, out double[] YImag);
             if (XImag.Length > 1)
                 mGraph.plt.PlotScatterHighlight(XImag, YImag, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Imaginary");
             // Amplitude
-            dataToVectors(mData.Amplitude, out double[] XAmp, out double[] YAmp);
+            Utilities.dictionaryToVectors(mData.Amplitude, out double[] XAmp, out double[] YAmp);
             if (XAmp.Length > 1)
                 mGraph.plt.PlotScatterHighlight(XAmp, YAmp, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Amplitude");
             // General characteristics
             if (mData.General != null && mData.General.Count > 0)
             {
-                dataToVectors(mData.General, out double[] XGen, out double[] YGen);
+                Utilities.dictionaryToVectors(mData.General, out double[] XGen, out double[] YGen);
                 mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "General");
             }
             mGraph.Render(lowQuality: false);
-        }
-
-        private void dataToVectors(in Dictionary<double, double> data, out double[] X, out double[] Y)
-        {
-            int numData = data.Count;
-            X = new double[numData];
-            Y = new double[numData];
-            int i = 0;
-            foreach (double key in data.Keys)
-            {
-                X[i] = key;
-                Y[i] = data[key];
-                ++i;
-            }
         }
 
         private DecrementData mData = null;

@@ -99,6 +99,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <GroupBox x:Name="groupBoxProject" Header="Project" Margin="0" FontWeight="Bold">
                     <Grid x:Name="gridProject" Margin="0,5,0,0">
@@ -246,6 +247,23 @@
                                            KeyDown="baseNumericChanged" LostFocus="baseNumericChanged" FontSize="{StaticResource appFontSize}"/>
                         <Label x:Name="labelDecrementByReal" Grid.Row="2" Grid.Column="0" Content="Decrement:" Margin="0" FontWeight="Normal" VerticalAlignment="Center"/>
                         <mah:NumericUpDown x:Name="numericDecrementByReal" Grid.Row="2" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" StringFormat="F5" IsReadOnly="True" HideUpDownButtons="True" FontSize="{StaticResource appFontSize}"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox x:Name="groupBoxExport" Header="Export" Margin="0" Grid.Row="4" FontWeight="Bold">
+                    <Grid x:Name="gridExport" Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="buttonExportExcel" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" Click="buttonExportExcel_Click">
+                            <StackPanel Width="14" Height="14">
+                                <StackPanel.Background>
+                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/excel.png"/>
+                                </StackPanel.Background>
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </GroupBox>
             </Grid>

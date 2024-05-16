@@ -178,20 +178,21 @@ namespace GenCalc
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
             if (mSelectedModalSet != null)
                 mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
-            ResponseCharacteristics characteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries,
+            // Estimate the characteristics
+            mCharacteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries,
                                                                                   numLevels, numInterpolationPoints,
                                                                                   numericResonanceFrequencyReal.Value, numericResonanceFrequencyImaginary.Value, numericResonanceFrequencyAmplitude.Value,
                                                                                   mSelectedModalSet);
             // Set signal data to plot
-            mSignalGraphModels[SignalModelType.kImaginary].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyImaginary);
-            mSignalGraphModels[SignalModelType.kReal].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyReal);
-            mSignalGraphModels[SignalModelType.kAmplitude].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, characteristics.ResonanceFrequencyAmplitude);
-            mHodographGraphModel.setData(mSelectedAcceleration, characteristics.ResonanceRealPeak, characteristics.ResonanceImaginaryPeak);
+            mSignalGraphModels[SignalModelType.kImaginary].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyImaginary);
+            mSignalGraphModels[SignalModelType.kReal].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyReal);
+            mSignalGraphModels[SignalModelType.kAmplitude].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyAmplitude);
+            mHodographGraphModel.setData(mSelectedAcceleration, mCharacteristics.ResonanceRealPeak, mCharacteristics.ResonanceImaginaryPeak);
             if (mSelectedModalSet != null)
                 mMonophaseGraphModel.setData(mSelectedModalSet.Responses);
             // Set results
-            mDecrementGraphModel.setData(characteristics.Decrement);
-            ModalParameters modalResults = characteristics.Modal;
+            mDecrementGraphModel.setData(mCharacteristics.Decrement);
+            ModalParameters modalResults = mCharacteristics.Modal;
             if (modalResults != null)
             {
                 foreach (ModalGraphModel model in mModalGraphModels)
@@ -202,17 +203,17 @@ namespace GenCalc
             numericRightFrequencyBoundary.Value = frequencyBoundaries.Item2;
             numericLeftLevelsBoundary.Value = levelsBoundaries.Item1;
             numericRightLevelsBoundary.Value = levelsBoundaries.Item2;
-            if (characteristics.ResonanceFrequencyReal > 0)
-                numericResonanceFrequencyReal.Value = characteristics.ResonanceFrequencyReal;
-            if (characteristics.ResonanceFrequencyImaginary > 0)
-                numericResonanceFrequencyImaginary.Value = characteristics.ResonanceFrequencyImaginary;
-            if (characteristics.ResonanceFrequencyAmplitude > 0)
-                numericResonanceFrequencyAmplitude.Value = characteristics.ResonanceFrequencyAmplitude;
+            if (mCharacteristics.ResonanceFrequencyReal > 0)
+                numericResonanceFrequencyReal.Value = mCharacteristics.ResonanceFrequencyReal;
+            if (mCharacteristics.ResonanceFrequencyImaginary > 0)
+                numericResonanceFrequencyImaginary.Value = mCharacteristics.ResonanceFrequencyImaginary;
+            if (mCharacteristics.ResonanceFrequencyAmplitude > 0)
+                numericResonanceFrequencyAmplitude.Value = mCharacteristics.ResonanceFrequencyAmplitude;
             numericDecrementByReal.Value = null;
-            if (characteristics.Decrement != null)
+            if (mCharacteristics.Decrement != null)
             { 
-                if (characteristics.Decrement.Real > 0)
-                    numericDecrementByReal.Value = characteristics.Decrement.Real;
+                if (mCharacteristics.Decrement.Real > 0)
+                    numericDecrementByReal.Value = mCharacteristics.Decrement.Real;
             }
         }
 
@@ -308,5 +309,7 @@ namespace GenCalc
         // Output models
         private DecrementGraphModel mDecrementGraphModel;
         private List<ModalGraphModel> mModalGraphModels;
+        // Computed data
+        private ResponseCharacteristics mCharacteristics;
     }
 }

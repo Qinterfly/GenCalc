@@ -2,6 +2,8 @@
 using System.Windows.Input;
 using System.Collections.Generic;
 using ScottPlot;
+using ScottPlot.WPF;
+using System.Windows.Controls;
 
 namespace GenCalc.Gui.Plot
 {
@@ -22,7 +24,7 @@ namespace GenCalc.Gui.Plot
             mGraph.plt.YLabel(fontSize: mkLabelFontSize);
             mGraph.plt.Ticks(numericFormatStringX: "G9", numericFormatStringY: "G9", fontSize: mkTickFontSize);
             mGraph.plt.Legend(fontSize: mkLegendFontSize);
-            graph.MouseDown += selectPoint;
+            mGraph.MouseDown += selectPoint;
         }
         
         public abstract void plot();

@@ -1,4 +1,5 @@
 archive
+exec
 help
 bin
 notes
@@ -6,6 +7,6 @@ obj
 tests/bin
 tests/obj
 .vs
-TODO.txt
 TestResults
-examples/
+examples
+packagaes

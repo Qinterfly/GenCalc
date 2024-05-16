@@ -6,6 +6,7 @@ namespace GenCalc.Core.Numerical
     public enum ResponseType
     {
         kUnknown,
+        kDisp,
         kAccel,
         kForce
     }
@@ -28,6 +29,26 @@ namespace GenCalc.Core.Numerical
             Amplitude = new double[nResponse];
             for (int i = 0; i != nResponse; ++i)
                 Amplitude[i] = Math.Sqrt(Math.Pow(RealPart[i], 2) + Math.Pow(ImaginaryPart[i], 2));
+        }
+
+        public Response convert(ResponseType type)
+        {
+            if (this.Type == ResponseType.kAccel && type == ResponseType.kDisp)
+            {
+                double[] resRealPart = RealPart.Clone() as double[];
+                double[] resImaginaryPart = ImaginaryPart.Clone() as double[];
+                double factor = 4.0 * Math.Pow(Math.PI, 2.0);
+                double delimiter;
+                int nResponse = RealPart.Length;
+                for (int i = 0; i != nResponse; ++i)
+                {
+                    delimiter = factor * Math.Pow(Frequency[i], 2.0);
+                    resRealPart[i] /= delimiter;
+                    resImaginaryPart[i] /= delimiter;
+                }
+                return new Response(type, Path, Name, OriginalRun, Node, Direction, Frequency, resRealPart, resImaginaryPart);
+            }
+            return null;
         }
 
         public bool equals(Response another)
