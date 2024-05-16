@@ -122,19 +122,17 @@
                                 </ContextMenu>
                             </TextBox.ContextMenu>
                         </TextBox>
-                        <Button x:Name="buttonOpenProject" Grid.Column="2" Margin="0,0,0,5" VerticalAlignment="Center" HorizontalAlignment="Center" Click="buttonOpenProject_Click">
-                            <StackPanel Width="14" Height="14">
-                                <StackPanel.Background>
-                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/openFile.png"/>
-                                </StackPanel.Background>
-                            </StackPanel>
+                        <Button x:Name="buttonOpenProject" 
+                                Grid.Column="2" Margin="0,0,0,5" Padding="3"
+                                VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                Click="buttonOpenProject_Click">
+                            <Image Source="../../resources/openFile.png"></Image>
                         </Button>
-                        <Button x:Name="buttonSelectAcceleration" Grid.Column="2" HorizontalAlignment="Center" Margin="0" Grid.Row="1" VerticalAlignment="Center" Click="buttonSelectAcceleration_Click">
-                            <StackPanel Width="14" Height="14">
-                                <StackPanel.Background>
-                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/select.png"/>
-                                </StackPanel.Background>
-                            </StackPanel>
+                        <Button x:Name="buttonSelectAcceleration" 
+                                Grid.Column="2" HorizontalAlignment="Center" Margin="0" Padding="3"
+                                Grid.Row="1" VerticalAlignment="Center" 
+                                Click="buttonSelectAcceleration_Click">
+                            <Image Source="../../resources/select.png"></Image>
                         </Button>
                     </Grid>
                 </GroupBox>
@@ -157,12 +155,11 @@
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
-                        <Button x:Name="buttonSelectForces" Grid.Column="2" HorizontalAlignment="Center" Margin="0,0,0,5" VerticalAlignment="Center" Click="buttonSelectForces_Click">
-                            <StackPanel Width="14" Height="14" VerticalAlignment="Center">
-                                <StackPanel.Background>
-                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/symbolF.png"/>
-                                </StackPanel.Background>
-                            </StackPanel>
+                        <Button x:Name="buttonSelectForces"
+                                Grid.Column="2" HorizontalAlignment="Center" Margin="0,0,0,5" Padding="3"
+                                VerticalAlignment="Center" 
+                                Click="buttonSelectForces_Click">
+                            <Image Source="../../resources/symbolF.png"></Image>
                         </Button>
                         <Label x:Name="labelResponses" Content="Responses: " Grid.Row="1" Margin="0,0,0,5" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Normal"/>
                         <ListBox x:Name="listBoxResponses" Grid.Column="1" Grid.Row="1" BorderThickness="1" Margin="5,0,5,5" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal" FontSize="{StaticResource appFontSize}">
@@ -172,12 +169,11 @@
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
-                        <Button x:Name="buttonSelectResponses" Grid.Column="2" Grid.Row="1" Margin="0,0,0,5" HorizontalAlignment="Center" VerticalAlignment="Center" Click="buttonSelectResponses_Click">
-                            <StackPanel Width="14" Height="14" VerticalAlignment="Center">
-                                <StackPanel.Background>
-                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/symbolR.png"/>
-                                </StackPanel.Background>
-                            </StackPanel>
+                        <Button x:Name="buttonSelectResponses"
+                                Grid.Column="2" Grid.Row="1" Margin="0,0,0,5" Padding="3"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                Click="buttonSelectResponses_Click">
+                            <Image Source="../../resources/symbolR.png"></Image>
                         </Button>
                     </Grid>
                 </GroupBox>
@@ -257,11 +253,13 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="buttonExportExcel" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" Click="buttonExportExcel_Click">
-                            <StackPanel Width="14" Height="14">
-                                <StackPanel.Background>
-                                    <ImageBrush TileMode="Tile" Stretch="Fill" ImageSource="../../resources/excel.png"/>
-                                </StackPanel.Background>
+                        <Button x:Name="buttonExportExcel" 
+                                Height="26" Padding="3" FontWeight="Normal"
+                                Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" 
+                                Click="buttonExportExcel_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="../../resources/excel.png"></Image>
+                                <TextBlock Margin="5,0,0,0" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe UI">Excel</TextBlock>
                             </StackPanel>
                         </Button>
                     </Grid>

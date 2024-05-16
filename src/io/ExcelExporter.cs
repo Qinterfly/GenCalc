@@ -240,6 +240,8 @@ namespace GenCalc.IO
 
         private void setBorders(ExcelWorksheet worksheet)
         {
+            if (worksheet.Dimension is null)
+                return;
             var borderStyle = worksheet.Cells[1, 1, worksheet.Dimension.End.Row, worksheet.Dimension.End.Column].Style.Border;
             borderStyle.Top.Style = ExcelBorderStyle.Thin;
             borderStyle.Right.Style = ExcelBorderStyle.Thin;
