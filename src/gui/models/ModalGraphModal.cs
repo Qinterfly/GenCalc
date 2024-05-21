@@ -4,32 +4,50 @@ using GenCalc.Core.Numerical;
 
 namespace GenCalc.Gui.Plot
 {
+    using ModalResults = Dictionary<string, ModalParameters>;
+
     abstract public class ModalGraphModel : AbstractGraphModel
     {
         public ModalGraphModel(in WpfPlot graph) : base(graph)
         {
-            graph.plt.XLabel("Level");
+            mGraph.plt.XLabel("Level");
+            mGraph.plt.Legend(location: legendLocation.upperLeft);
         }
 
-        public abstract void setData(in ModalParameters data);
+        public void setData(in ModalResults data)
+        {
+            mData = data;
+        }
 
         public override bool isDataSet()
         {
-            return mData != null && mYData != null;
+            return mData != null && mData.Count > 0;
         }
 
-        public override void plot()
+        public bool initialize()
         {
             mGraph.plt.Clear();
             if (!isDataSet())
+                return false;
+            return true;
+        }
+
+        public void plot(string field)
+        {
+            if (!initialize())
                 return;
-            if (mYData.Count > 1)
-                mGraph.plt.PlotScatterHighlight(mData.Levels.ToArray(), mYData.ToArray(), lineWidth: mkLineWidth, markerSize: mkMarkerSize);
+            foreach (string key in mData.Keys)
+            {
+                ModalParameters item = mData[key];
+                if (item == null)
+                    continue;
+                List<double> YData = item.GetType().GetField(field).GetValue(item) as List<double>;
+                mGraph.plt.PlotScatterHighlight(item.Levels.ToArray(), YData.ToArray(), lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: key);
+            }
             mGraph.Render(lowQuality: false);
         }
 
-        protected ModalParameters mData = null;
-        protected List<double> mYData = null;
+        protected ModalResults mData = null;
     }
 
     public class ModalMassGraphModel : ModalGraphModel
@@ -39,10 +57,9 @@ namespace GenCalc.Gui.Plot
             graph.plt.YLabel("Modal mass, kg");
         }
 
-        public override void setData(in ModalParameters data)
+        public override void plot()
         {
-            mData = data;
-            mYData = data.Mass;
+            plot("Mass");
         }
     }
 
@@ -53,10 +70,9 @@ namespace GenCalc.Gui.Plot
             graph.plt.YLabel("Modal stiffness, N/m");
         }
 
-        public override void setData(in ModalParameters data)
+        public override void plot()
         {
-            mData = data;
-            mYData = data.Stiffness;
+            plot("Stiffness");
         }
     }
 
@@ -67,10 +83,9 @@ namespace GenCalc.Gui.Plot
             graph.plt.YLabel("Modal damping, kg/c^2");
         }
 
-        public override void setData(in ModalParameters data)
+        public override void plot()
         {
-            mData = data;
-            mYData = data.Damping;
+            plot("Damping");
         }
     }
 
@@ -81,10 +96,9 @@ namespace GenCalc.Gui.Plot
             graph.plt.YLabel("Modal frequency, Hz");
         }
 
-        public override void setData(in ModalParameters data)
+        public override void plot()
         {
-            mData = data;
-            mYData = data.Frequency;
+            plot("Frequency");
         }
     }
 

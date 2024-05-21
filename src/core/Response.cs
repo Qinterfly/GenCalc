@@ -7,6 +7,7 @@ namespace GenCalc.Core.Numerical
     {
         kUnknown,
         kDisp,
+        kVeloc,
         kAccel,
         kForce
     }
@@ -33,19 +34,37 @@ namespace GenCalc.Core.Numerical
 
         public Response convert(ResponseType type)
         {
-            if (this.Type == ResponseType.kAccel && type == ResponseType.kDisp)
+            if (this.Type == ResponseType.kAccel)
             {
                 double[] resRealPart = RealPart.Clone() as double[];
                 double[] resImaginaryPart = ImaginaryPart.Clone() as double[];
-                double factor = 4.0 * Math.Pow(Math.PI, 2.0);
+                double twoPI = 2.0 * Math.PI;
                 double delimiter;
                 int nResponse = RealPart.Length;
-                for (int i = 0; i != nResponse; ++i)
+                switch (type)
                 {
-                    delimiter = factor * Math.Pow(Frequency[i], 2.0);
-                    resRealPart[i] /= delimiter;
-                    resImaginaryPart[i] /= delimiter;
+                    case ResponseType.kDisp:
+                        for (int i = 0; i != nResponse; ++i)
+                        {
+                            delimiter           = Math.Pow(twoPI * Frequency[i], 2.0);
+                            resRealPart[i]      /= delimiter;
+                            resImaginaryPart[i] /= delimiter;
+                        }
+                        break;
+                    case ResponseType.kVeloc:
+                        double tValue;
+                        for (int i = 0; i != nResponse; ++i)
+                        {
+                            delimiter           = twoPI * Frequency[i];
+                            tValue              = -resRealPart[i];
+                            resRealPart[i]      = resImaginaryPart[i] / delimiter;
+                            resImaginaryPart[i] = tValue / delimiter;
+                        }
+                        break;
+                    default:
+                        return null;
                 }
+
                 return new Response(type, Path, Name, OriginalRun, Node, Direction, Frequency, resRealPart, resImaginaryPart);
             }
             return null;

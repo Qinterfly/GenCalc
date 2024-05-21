@@ -42,6 +42,12 @@ namespace GenCalc.Gui.Plot
                 Utilities.dictionaryToVectors(mData.General, out double[] XGen, out double[] YGen);
                 mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "General");
             }
+            // Complex characteristics
+            if (mData.Complex != null && mData.Complex.Count > 0)
+            {
+                Utilities.dictionaryToVectors(mData.Complex, out double[] XGen, out double[] YGen);
+                mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, lineStyle: LineStyle.Dash, markerShape: MarkerShape.none, label: "Complex");
+            }
             mGraph.Render(lowQuality: false);
         }
 

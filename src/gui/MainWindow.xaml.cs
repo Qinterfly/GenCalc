@@ -9,6 +9,7 @@ using GenCalc.Gui.Plot;
 namespace GenCalc
 {
     using PairDouble = Tuple<double, double>;
+    using ModalResults = Dictionary<string, ModalParameters>;
 
     public enum SignalModelType
     {
@@ -192,12 +193,11 @@ namespace GenCalc
                 mMonophaseGraphModel.setData(mSelectedModalSet.Responses);
             // Set results
             mDecrementGraphModel.setData(mCharacteristics.Decrement);
-            ModalParameters modalResults = mCharacteristics.Modal;
-            if (modalResults != null)
-            {
-                foreach (ModalGraphModel model in mModalGraphModels)
-                    model.setData(modalResults);
-            }
+            ModalResults modalResults = new Dictionary<string, ModalParameters>();
+            modalResults.Add("General", mCharacteristics.ModalGeneral);
+            modalResults.Add("Complex", mCharacteristics.ModalComplex);
+            foreach (ModalGraphModel model in mModalGraphModels)
+                model.setData(modalResults);
             // Correct input parameters
             numericLeftFrequencyBoundary.Value = frequencyBoundaries.Item1;
             numericRightFrequencyBoundary.Value = frequencyBoundaries.Item2;

@@ -58,28 +58,32 @@ namespace GenCalc.Core.Numerical
                 ResonanceFrequencyAmplitude = retrieveResonanceFrequency(splineAmplitudeDisplacement, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
                 ResonanceFrequencyAmplitude = (double)manualFrequencyAmplitude;
-            // Calculate decrements
+            // Calculate resonance peaks
             Decrement = new DecrementData();
             ResonanceRealPeak = splineRealDisplacement.Interpolate(ResonanceFrequencyReal);
             ResonanceImaginaryPeak = splineImagDisplacement.Interpolate(ResonanceFrequencyImaginary);
             ResonanceAmplitudePeak = splineAmplitudeDisplacement.Interpolate(ResonanceFrequencyAmplitude);
-            // Decrements
+            // Compute decrements
             calculateDecrement(DecrementType.kImaginary, splineImagDisplacement, frequencyBoundaries, numInterpolationPoints);
             calculateDecrement(DecrementType.kAmplitude, splineAmplitudeDisplacement, frequencyBoundaries, numInterpolationPoints);
             calculateDecrementByReal(splineRealDisplacement, frequencyBoundaries, numInterpolationPoints);
             // Modal data
-            if (modalSet != null && modalSet.isCorrect())
+            if (modalSet != null && modalSet.isCorrect() && frequency.Length == modalSet.ReferenceResponse.Amplitude.Length)
             {
-                Modal = new ModalParameters();
+                ModalGeneral = new ModalParameters();
+                Response referenceDisplacement = modalSet.ReferenceResponse.convert(ResponseType.kDisp);
+                CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, referenceDisplacement.Amplitude);
+                // By amplitudes
                 CubicSpline splineGeneralForce = calculateGeneralForce(modalSet);
                 if (splineGeneralForce != null) 
-                { 
-                    if (frequency.Length == modalSet.ReferenceResponse.Amplitude.Length)
-                    {
-                        Response referenceDisplacement = modalSet.ReferenceResponse.convert(ResponseType.kDisp);
-                        CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, referenceDisplacement.Amplitude);
-                        calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
-                    }
+                    calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
+                // By complex power
+                Tuple<CubicSpline, CubicSpline> complexPower = calculateComplexPower(modalSet);
+                if (complexPower != null)
+                {
+                    ModalComplex = new ModalParameters();
+                    double resonanceFrequencyComplexPower = retrieveResonanceFrequency(complexPower.Item1, false, frequencyBoundaries, numInterpolationPoints, ResonanceFrequencyImaginary);
+                    estimateByComplexPower(complexPower, splineAmplitudeReference, resonanceFrequencyComplexPower);
                 }
             }
             // Convert back the resonance peaks
@@ -328,15 +332,15 @@ namespace GenCalc.Core.Numerical
                 double decrementDenominator = Math.Sqrt(4.0 * Math.Pow(stiffness / damping, 2.0) - 1);
                 if (decrementDenominator > 0)
                 {
-                    double decrement = 2 * Math.PI / decrementDenominator;
+                    double decrement = 2.0 * Math.PI / decrementDenominator;
                     Decrement.General.Add(levelValue, decrement);
                 }
                 // Add results
-                Modal.Levels.Add(levelValue);
-                Modal.Mass.Add(mass);
-                Modal.Stiffness.Add(stiffness);
-                Modal.Frequency.Add(resFrequency);
-                Modal.Damping.Add(damping);
+                ModalGeneral.Levels.Add(levelValue);
+                ModalGeneral.Mass.Add(mass);
+                ModalGeneral.Stiffness.Add(stiffness);
+                ModalGeneral.Frequency.Add(resFrequency);
+                ModalGeneral.Damping.Add(damping);
             }
         }
 
@@ -405,9 +409,69 @@ namespace GenCalc.Core.Numerical
             return CubicSpline.InterpolateNatural(frequency, generalForce);
         }
 
+        private Tuple<CubicSpline, CubicSpline> calculateComplexPower(ModalDataSet modalSet)
+        {
+            List<int> links = modalSet.getForceLinks();
+            if (links == null)
+                return null;
+            int numForce = modalSet.Forces.Count;
+            int lengthSignal = modalSet.Forces[0].Length;
+            if (lengthSignal < 2)
+                return null;
+            List<Response> velocities = new List<Response>(numForce);
+            foreach (Response response in modalSet.Responses)
+                velocities.Add(response.convert(ResponseType.kVeloc));
+            double[] resRealPart = new double[lengthSignal];
+            double[] resImagPart = new double[lengthSignal];
+            for (int iForce = 0; iForce != numForce; ++iForce)
+            {
+                int iResponse = links[iForce];
+                double[] forceReal = modalSet.Forces[iForce].RealPart;
+                double[] forceImag = modalSet.Forces[iForce].ImaginaryPart;
+                double[] velocityReal = velocities[iResponse].RealPart;
+                double[] velocityImag = velocities[iResponse].ImaginaryPart;
+                for (int i = 0; i != lengthSignal; ++i) 
+                {
+                    resRealPart[i] += 0.5 * (forceReal[i] * velocityReal[i] - forceImag[i] * velocityImag[i]);
+                    resImagPart[i] += 0.5 * (forceReal[i] * velocityImag[i] + forceImag[i] * velocityReal[i]);
+                }
+            }
+            double[] frequency = modalSet.Forces[0].Frequency;
+            CubicSpline resRealSpline = CubicSpline.InterpolateNatural(frequency, resRealPart);
+            CubicSpline resImagSpline = CubicSpline.InterpolateNatural(frequency, resImagPart);
+            return new Tuple<CubicSpline, CubicSpline>(resRealSpline, resImagSpline);
+        }
+
+        private void estimateByComplexPower(Tuple<CubicSpline, CubicSpline> complexPower, CubicSpline reference, double frequency)
+        {
+            const double kTwoPI = 2.0 * Math.PI;
+            double radFrequency = kTwoPI * frequency;
+            double slope        = complexPower.Item2.Differentiate(frequency) / kTwoPI;
+
+            // Estimate the modal parameters
+            double mass         = -1.0 / Math.Pow(reference.Interpolate(frequency) * radFrequency, 2.0) * slope;
+            double stiffness    = mass * Math.Pow(radFrequency, 2.0);
+            double damping      = complexPower.Item1.Interpolate(frequency) / (Math.Pow(radFrequency, 3.0) * mass * Math.Pow(reference.Interpolate(frequency), 2.0));
+            double decrement    = kTwoPI * damping;
+            double resFrequency = Math.Sqrt(stiffness / mass) / kTwoPI;
+
+            // Insert the results
+            Decrement.Complex = new Dictionary<double, double>();
+            foreach (double level in Levels)
+            { 
+                ModalComplex.Levels.Add(level);
+                ModalComplex.Mass.Add(mass);
+                ModalComplex.Stiffness.Add(stiffness);
+                ModalComplex.Frequency.Add(resFrequency);
+                ModalComplex.Damping.Add(damping);
+                Decrement.Complex.Add(level, decrement);
+            }
+        }
+
         public readonly double[] Levels;
         public readonly DecrementData Decrement;
-        public readonly ModalParameters Modal;
+        public readonly ModalParameters ModalGeneral;
+        public readonly ModalParameters ModalComplex;
         public readonly double ResonanceFrequencyReal;
         public readonly double ResonanceFrequencyImaginary;
         public readonly double ResonanceFrequencyAmplitude;
@@ -423,5 +487,6 @@ namespace GenCalc.Core.Numerical
         public Dictionary<double, double> Amplitude;
         public double Real;
         public Dictionary<double, double> General;
+        public Dictionary<double, double> Complex;
     }
 }

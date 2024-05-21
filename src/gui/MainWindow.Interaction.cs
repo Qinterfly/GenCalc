@@ -182,7 +182,11 @@ namespace GenCalc
             string labelX = coordinates.Item1.ToString(format);
             string labelY = coordinates.Item2.ToString(format);
             setStatus($"Selected point: ({labelX}, {labelY})");
-            Clipboard.SetText(labelY, TextDataFormat.Text);
+            try
+            {
+                Clipboard.SetText(labelY, TextDataFormat.Text);
+            }
+            catch { }
         }
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)

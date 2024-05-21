@@ -18,7 +18,7 @@ namespace GenCalc.Gui.Plot
         {
             graph.MouseUpPlottable += RaiseFrequencyBoundariesEvent;
             graph.MouseUpPlottable += RaiseResonanceFrequencyEvent;
-            mGraph.plt.XLabel("Frequencies, Hz");
+            mGraph.plt.XLabel("Frequency, Hz");
             mGraph.plt.YLabel("Acceleration, m/s^2");
         }
 

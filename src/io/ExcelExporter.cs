@@ -3,7 +3,6 @@ using OfficeOpenXml.Style;
 using GenCalc.Core.Numerical;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 
 namespace GenCalc.IO
 {
@@ -35,7 +34,7 @@ namespace GenCalc.IO
         private void createCharacteristicsWorksheet(in ResponseCharacteristics characteristics)
         {
             const int kNumRowsHeader = 2;
-            const int kNumColsHeader = 8;
+            const int kNumColsHeader = 13;
 
             var worksheet = mPackage.Workbook.Worksheets.Add("Results");
 
@@ -45,20 +44,15 @@ namespace GenCalc.IO
             worksheet.Cells[1, 1, kNumRowsHeader, kNumColsHeader].Style.Font.Bold = true;
 
             // Create the header
-            worksheet.Cells[1, 1].Value = "Level";
-            worksheet.Cells[1, 2].Value = "Mass";
-            worksheet.Cells[1, 3].Value = "Stiffness";
-            worksheet.Cells[1, 4].Value = "Damping";
-            worksheet.Cells[1, 5].Value = "Frequency";
-            worksheet.Cells[1, 6].Value = "Decrement";
-            worksheet.Cells[2, 6].Value = "Imaginary";
-            worksheet.Cells[2, 7].Value = "Amplitude";
-            worksheet.Cells[2, 8].Value = "General";
+            worksheet.Cells[1, 1].Value  = "Level";
+            worksheet.Cells[1, 10].Value = "Decrement";
+            worksheet.Cells[2, 11].Value = "Imaginary";
+            worksheet.Cells[2, 12].Value = "Amplitude";
+            worksheet.Cells[2, 13].Value = "General";
 
             // Merge the headers
-            for (int iColumn = 1; iColumn <= 5; ++iColumn)
-                worksheet.Cells[1, iColumn, kNumRowsHeader, iColumn].Merge = true;
-            worksheet.Cells[1, 6, 1, 8].Merge = true;
+            worksheet.Cells[1, 1, kNumRowsHeader, 1].Merge = true;
+            worksheet.Cells[1, 10, 1, 13].Merge            = true;
 
             // Check if there are any characteristics to write
             if (characteristics is null)
@@ -70,47 +64,15 @@ namespace GenCalc.IO
             for (int i = 0; i != numLevels; ++i)
                 worksheet.Cells[iStartRowData + i, 1].Value = characteristics.Levels[i];
 
-            // Output the general data
-            double[] keys;
-            double[] values;
-            Utilities.dictionaryToVectors(characteristics.Decrement.General, out keys, out values);
-            int numKeys = keys.Length;
-            for (int i = 0; i != numKeys; ++i)
-            {
-                int iInsertRow = Array.IndexOf(characteristics.Levels, keys[i]);
-                if (iInsertRow < 0)
-                    continue;
-                iInsertRow += iStartRowData;
-                worksheet.Cells[iInsertRow, 2].Value = characteristics.Modal.Mass[i];
-                worksheet.Cells[iInsertRow, 3].Value = characteristics.Modal.Stiffness[i];
-                worksheet.Cells[iInsertRow, 4].Value = characteristics.Modal.Damping[i];
-                worksheet.Cells[iInsertRow, 5].Value = characteristics.Modal.Frequency[i];
-                worksheet.Cells[iInsertRow, 8].Value = values[i];
-            }
+            // Output the modal data
+            setModalData(worksheet, characteristics.Levels, characteristics.ModalGeneral, 1, 2, "General");
+            setModalData(worksheet, characteristics.Levels, characteristics.ModalComplex, 1, 6, "Complex");
 
-            // Output the decrements calculated by means of the imaginary part of the response
-            Utilities.dictionaryToVectors(characteristics.Decrement.Imaginary, out keys, out values);
-            numKeys = keys.Length;
-            for (int i = 0; i != numKeys; ++i)
-            {
-                int iInsertRow = Array.IndexOf(characteristics.Levels, keys[i]);
-                if (iInsertRow < 0)
-                    continue;
-                iInsertRow += iStartRowData;
-                worksheet.Cells[iInsertRow, 6].Value = values[i];
-            }
-
-            // Output the decrements calculated by means of the amplitude part of the response
-            Utilities.dictionaryToVectors(characteristics.Decrement.Amplitude, out keys, out values);
-            numKeys = keys.Length;
-            for (int i = 0; i != numKeys; ++i)
-            {
-                int iInsertRow = Array.IndexOf(characteristics.Levels, keys[i]);
-                if (iInsertRow < 0)
-                    continue;
-                iInsertRow += iStartRowData;
-                worksheet.Cells[iInsertRow, 7].Value = values[i];
-            }
+            // Output the decrements
+            setDecrement(worksheet, characteristics.Levels, characteristics.Decrement.Imaginary, kNumRowsHeader, 10, "Imaginary");
+            setDecrement(worksheet, characteristics.Levels, characteristics.Decrement.Amplitude, kNumRowsHeader, 11, "Amplitude");
+            setDecrement(worksheet, characteristics.Levels, characteristics.Decrement.General, kNumRowsHeader,   12, "General");
+            setDecrement(worksheet, characteristics.Levels, characteristics.Decrement.Complex, kNumRowsHeader,   13, "Complex");
 
             // Set the border style
             setBorders(worksheet);
@@ -238,6 +200,56 @@ namespace GenCalc.IO
             }
         }
 
+        private void setDecrement(ExcelWorksheet worksheet, in double[] levels, in Dictionary<double, double> decrement, int iHeaderRow, int iColumn, string name)
+        {
+            // Create the subheader
+            worksheet.Cells[iHeaderRow, iColumn].Value = name;
+
+            // Set the data
+            double[] keys;
+            double[] values;
+            Utilities.dictionaryToVectors(decrement, out keys, out values);
+            int numKeys = keys.Length;
+            int iStartRow = iHeaderRow + 1;
+            for (int i = 0; i != numKeys; ++i)
+            {
+                int iInsertRow = Array.IndexOf(levels, keys[i]);
+                if (iInsertRow < 0)
+                    continue;
+                iInsertRow += iStartRow;
+                worksheet.Cells[iInsertRow, iColumn].Value = values[i];
+            }
+        }
+
+        private void setModalData(ExcelWorksheet worksheet, in double[] levels, in ModalParameters parameters, int iHeaderRow, int iStartColumn, string name)
+        {
+            // Create the header
+            worksheet.Cells[iHeaderRow, iStartColumn].Value = name;
+            worksheet.Cells[iHeaderRow, iStartColumn, iHeaderRow, iStartColumn + 3].Merge = true;
+
+            // Create the subheader
+            ++iHeaderRow;
+            worksheet.Cells[iHeaderRow, iStartColumn    ].Value = "Mass";
+            worksheet.Cells[iHeaderRow, iStartColumn + 1].Value = "Stiffness";
+            worksheet.Cells[iHeaderRow, iStartColumn + 2].Value = "Damping";
+            worksheet.Cells[iHeaderRow, iStartColumn + 3].Value = "Frequency";
+
+            // Set the data
+            int iStartRow = iHeaderRow + 1;
+            int numModalLevels = parameters.Levels.Count;
+            for (int i = 0; i != numModalLevels; ++i)
+            {
+                int iInsertRow = Array.IndexOf(levels, parameters.Levels[i]);
+                if (iInsertRow < 0)
+                    continue;
+                iInsertRow += iStartRow;
+                worksheet.Cells[iInsertRow, iStartColumn    ].Value = parameters.Mass[i];
+                worksheet.Cells[iInsertRow, iStartColumn + 1].Value = parameters.Stiffness[i];
+                worksheet.Cells[iInsertRow, iStartColumn + 2].Value = parameters.Damping[i];
+                worksheet.Cells[iInsertRow, iStartColumn + 3].Value = parameters.Frequency[i];
+            }
+        }
+
         private void setBorders(ExcelWorksheet worksheet)
         {
             if (worksheet.Dimension is null)
@@ -249,6 +261,6 @@ namespace GenCalc.IO
             borderStyle.Left.Style = ExcelBorderStyle.Thin;
         }
 
-        ExcelPackage mPackage;
+        private ExcelPackage mPackage;
     }
 }
