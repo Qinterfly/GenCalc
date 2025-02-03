@@ -159,7 +159,12 @@ namespace GenCalc.Core.Numerical
                 }
                 catch
                 {
-                    continue;
+                    bool isFind = RobustNewtonRaphson.TryFindRoot(resonanceFunc, resonanceDiffFunc, frequencyBoundaries.Item1, frequencyBoundaries.Item2,
+                                                                  accuracy: 1e-8, maxIterations: 100, subdivision: 20, out double root);
+                    if (isFind)
+                        resFrequencies[i] = root;
+                    else
+                        continue;
                 }
                 distance = Math.Abs(resFrequencies[i] - approximation);
                 if (distance < minDistance)
