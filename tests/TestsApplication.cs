@@ -20,7 +20,7 @@ namespace Tests
                 application.InitializeComponent();
                 application.Dispatcher.InvokeAsync(() =>
                 {
-                    MainWindow window = (MainWindow)application.MainWindow;
+                    window = (MainWindow)application.MainWindow;
                     window.Show();
                 }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 application.Run();

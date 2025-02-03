@@ -48,6 +48,7 @@ namespace Tests
         public static string projectPath = Path.GetFullPath("../../../examples/Mitten.lms");
         public static string baseForcePath = "Section1/Отч 8,5 АИСт1 13,06Гц/ReferenceSpectra/";
         public static string baseAccelerationPath = "Section1/Отч 8,5 АИСт1 13,06Гц/ResponsesSpectra/";
+
         public static LMSProject project = new LMSProject(projectPath);
         public static Response acceleration = null;
         public static ModalDataSet modalSet = new ModalDataSet();

@@ -15,7 +15,7 @@ namespace GenCalc.Core.Numerical
 
     public class ResponseCharacteristics
     {
-        public ResponseCharacteristics(in Response acceleration, 
+        public ResponseCharacteristics(in Response acceleration,
                                        ref PairDouble frequencyBoundaries, ref PairDouble levelsBoundaries,
                                        int numLevels, int numInterpolationPoints = 512,
                                        double? manualFrequencyReal = null, double? manualFrequencyImaginary = null, double? manualFrequencyAmplitude = null,
@@ -43,17 +43,17 @@ namespace GenCalc.Core.Numerical
                 Levels[i] = startLevel + i * stepLevel;
             // Finding resonance frequencies
             double startFrequency = acceleration.getFrequencyValue();
-                // Real
+            // Real
             if (manualFrequencyReal == null)
                 ResonanceFrequencyReal = retrieveResonanceFrequency(splineRealDisplacement, false, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
                 ResonanceFrequencyReal = (double)manualFrequencyReal;
-                // Imaginary
+            // Imaginary
             if (manualFrequencyImaginary == null)
                 ResonanceFrequencyImaginary = retrieveResonanceFrequency(splineImagDisplacement, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
                 ResonanceFrequencyImaginary = (double)manualFrequencyImaginary;
-                // Amplitude
+            // Amplitude
             if (manualFrequencyAmplitude == null)
                 ResonanceFrequencyAmplitude = retrieveResonanceFrequency(splineAmplitudeDisplacement, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
@@ -75,7 +75,7 @@ namespace GenCalc.Core.Numerical
                 CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, referenceDisplacement.Amplitude);
                 // By amplitudes
                 CubicSpline splineGeneralForce = calculateGeneralForce(modalSet);
-                if (splineGeneralForce != null) 
+                if (splineGeneralForce != null)
                     calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
                 // By complex power
                 Tuple<CubicSpline, CubicSpline> complexPower = calculateComplexPower(modalSet);
@@ -153,7 +153,14 @@ namespace GenCalc.Core.Numerical
             int numFrequencies = resFrequencies.Count;
             for (int i = 0; i != numFrequencies; ++i)
             {
-                resFrequencies[i] = NewtonRaphson.FindRootNearGuess(resonanceFunc, resonanceDiffFunc, resFrequencies[i], frequencyBoundaries.Item1, frequencyBoundaries.Item2);
+                try
+                {
+                    resFrequencies[i] = NewtonRaphson.FindRootNearGuess(resonanceFunc, resonanceDiffFunc, resFrequencies[i], frequencyBoundaries.Item1, frequencyBoundaries.Item2);
+                }
+                catch
+                {
+                    continue;
+                }
                 distance = Math.Abs(resFrequencies[i] - approximation);
                 if (distance < minDistance)
                 {
@@ -363,8 +370,8 @@ namespace GenCalc.Core.Numerical
             }
             double leftRoot = roots[leftIndex];
             double rightRoot = roots[rightIndex];
-            try 
-            { 
+            try
+            {
                 leftRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, leftRoot, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
                 rightRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, rightRoot, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
             }
@@ -430,7 +437,7 @@ namespace GenCalc.Core.Numerical
                 double[] forceImag = modalSet.Forces[iForce].ImaginaryPart;
                 double[] velocityReal = velocities[iResponse].RealPart;
                 double[] velocityImag = velocities[iResponse].ImaginaryPart;
-                for (int i = 0; i != lengthSignal; ++i) 
+                for (int i = 0; i != lengthSignal; ++i)
                 {
                     resRealPart[i] += 0.5 * (forceReal[i] * velocityReal[i] - forceImag[i] * velocityImag[i]);
                     resImagPart[i] += 0.5 * (forceReal[i] * velocityImag[i] + forceImag[i] * velocityReal[i]);
@@ -446,19 +453,19 @@ namespace GenCalc.Core.Numerical
         {
             const double kTwoPI = 2.0 * Math.PI;
             double radFrequency = kTwoPI * frequency;
-            double slope        = complexPower.Item2.Differentiate(frequency) / kTwoPI;
+            double slope = complexPower.Item2.Differentiate(frequency) / kTwoPI;
 
             // Estimate the modal parameters
-            double mass         = -1.0 / Math.Pow(reference.Interpolate(frequency) * radFrequency, 2.0) * slope;
-            double stiffness    = mass * Math.Pow(radFrequency, 2.0);
-            double damping      = complexPower.Item1.Interpolate(frequency) / (Math.Pow(radFrequency, 3.0) * mass * Math.Pow(reference.Interpolate(frequency), 2.0));
-            double decrement    = kTwoPI * damping;
+            double mass = -1.0 / Math.Pow(reference.Interpolate(frequency) * radFrequency, 2.0) * slope;
+            double stiffness = mass * Math.Pow(radFrequency, 2.0);
+            double damping = complexPower.Item1.Interpolate(frequency) / (Math.Pow(radFrequency, 3.0) * mass * Math.Pow(reference.Interpolate(frequency), 2.0));
+            double decrement = kTwoPI * damping;
             double resFrequency = Math.Sqrt(stiffness / mass) / kTwoPI;
 
             // Insert the results
             Decrement.Complex = new Dictionary<double, double>();
             foreach (double level in Levels)
-            { 
+            {
                 ModalComplex.Levels.Add(level);
                 ModalComplex.Mass.Add(mass);
                 ModalComplex.Stiffness.Add(stiffness);
