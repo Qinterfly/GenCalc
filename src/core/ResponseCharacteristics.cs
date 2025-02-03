@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MathNet.Numerics;
 using MathNet.Numerics.Interpolation;
 using MathNet.Numerics.RootFinding;
 
@@ -31,9 +32,9 @@ namespace GenCalc.Core.Numerical
             correctLevelsBoundaries(ref levelsBoundaries);
             // Interpolate the displacement
             double[] frequency = displacement.Frequency;
-            CubicSpline splineRealDisplacement = CubicSpline.InterpolateNatural(frequency, displacement.RealPart);
-            CubicSpline splineImagDisplacement = CubicSpline.InterpolateNatural(frequency, displacement.ImaginaryPart);
-            CubicSpline splineAmplitudeDisplacement = CubicSpline.InterpolateNatural(frequency, displacement.Amplitude);
+            CubicSpline splineRealDisplacement = CubicSpline.InterpolateAkima(frequency, displacement.RealPart);
+            CubicSpline splineImagDisplacement = CubicSpline.InterpolateAkima(frequency, displacement.ImaginaryPart);
+            CubicSpline splineAmplitudeDisplacement = CubicSpline.InterpolateAkima(frequency, displacement.Amplitude);
             // Create mesh of levels
             double startLevel = levelsBoundaries.Item1;
             double endLevel = levelsBoundaries.Item2;
@@ -72,7 +73,7 @@ namespace GenCalc.Core.Numerical
             {
                 ModalGeneral = new ModalParameters();
                 Response referenceDisplacement = modalSet.ReferenceResponse.convert(ResponseType.kDisp);
-                CubicSpline splineAmplitudeReference = CubicSpline.InterpolateNatural(frequency, referenceDisplacement.Amplitude);
+                CubicSpline splineAmplitudeReference = CubicSpline.InterpolateAkima(frequency, referenceDisplacement.Amplitude);
                 // By amplitudes
                 CubicSpline splineGeneralForce = calculateGeneralForce(modalSet);
                 if (splineGeneralForce != null)
@@ -87,9 +88,9 @@ namespace GenCalc.Core.Numerical
                 }
             }
             // Convert back the resonance peaks
-            CubicSpline splineRealAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.RealPart);
-            CubicSpline splineImagAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.ImaginaryPart);
-            CubicSpline splineAmplitudeAcceleration = CubicSpline.InterpolateNatural(frequency, acceleration.Amplitude);
+            CubicSpline splineRealAcceleration = CubicSpline.InterpolateAkima(frequency, acceleration.RealPart);
+            CubicSpline splineImagAcceleration = CubicSpline.InterpolateAkima(frequency, acceleration.ImaginaryPart);
+            CubicSpline splineAmplitudeAcceleration = CubicSpline.InterpolateAkima(frequency, acceleration.Amplitude);
             ResonanceRealPeak = splineRealAcceleration.Interpolate(ResonanceFrequencyReal);
             ResonanceImaginaryPeak = splineImagAcceleration.Interpolate(ResonanceFrequencyImaginary);
             ResonanceAmplitudePeak = splineAmplitudeAcceleration.Interpolate(ResonanceFrequencyAmplitude);
@@ -148,7 +149,9 @@ namespace GenCalc.Core.Numerical
             if (resFrequencies.Count == 0)
                 return approximation;
             double distance;
+            double funValue;
             double minDistance = Double.MaxValue;
+            double minValue = Double.MaxValue;
             int indClosestResonance = 0;
             int numFrequencies = resFrequencies.Count;
             for (int i = 0; i != numFrequencies; ++i)
@@ -167,9 +170,15 @@ namespace GenCalc.Core.Numerical
                         continue;
                 }
                 distance = Math.Abs(resFrequencies[i] - approximation);
-                if (distance < minDistance)
+                funValue = Math.Abs(resonanceFunc(resFrequencies[i]));
+                if (approximation > 0 && distance < minDistance)
                 {
                     minDistance = distance;
+                    indClosestResonance = i;
+                }
+                else if (funValue < minValue)
+                {
+                    minValue = funValue;
                     indClosestResonance = i;
                 }
             }
@@ -418,7 +427,7 @@ namespace GenCalc.Core.Numerical
             double[] referenceImag = modalSet.ReferenceResponse.ImaginaryPart;
             for (int i = 0; i != lengthSignal; ++i)
                 generalForce[i] = Math.Abs(generalForce[i] / referenceImag[i] * omega2[i]);
-            return CubicSpline.InterpolateNatural(frequency, generalForce);
+            return CubicSpline.InterpolateAkima(frequency, generalForce);
         }
 
         private Tuple<CubicSpline, CubicSpline> calculateComplexPower(ModalDataSet modalSet)
@@ -449,8 +458,8 @@ namespace GenCalc.Core.Numerical
                 }
             }
             double[] frequency = modalSet.Forces[0].Frequency;
-            CubicSpline resRealSpline = CubicSpline.InterpolateNatural(frequency, resRealPart);
-            CubicSpline resImagSpline = CubicSpline.InterpolateNatural(frequency, resImagPart);
+            CubicSpline resRealSpline = CubicSpline.InterpolateAkima(frequency, resRealPart);
+            CubicSpline resImagSpline = CubicSpline.InterpolateAkima(frequency, resImagPart);
             return new Tuple<CubicSpline, CubicSpline>(resRealSpline, resImagSpline);
         }
 
