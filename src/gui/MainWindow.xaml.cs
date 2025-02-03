@@ -18,6 +18,12 @@ namespace GenCalc
         kAmplitude
     }
 
+    public enum ModalResultType
+    {
+        kGeneral,
+        kComplex
+    }
+
     public partial class MainWindow : MetroWindow
     {
         public MainWindow()
@@ -105,7 +111,7 @@ namespace GenCalc
             setFrequencyBoundary(numericRightFrequencyBoundary, minFrequency, maxFrequency);
             numericRightFrequencyBoundary.Value = maxFrequency;
             // Resonance frequency
-            enableNumericControl(numericResonanceFrequencyReal,      minFrequency, maxFrequency);
+            enableNumericControl(numericResonanceFrequencyReal, minFrequency, maxFrequency);
             enableNumericControl(numericResonanceFrequencyImaginary, minFrequency, maxFrequency);
             enableNumericControl(numericResonanceFrequencyAmplitude, minFrequency, maxFrequency);
             // Decrement by real part
@@ -175,29 +181,34 @@ namespace GenCalc
         {
             PairDouble frequencyBoundaries = new PairDouble((double)numericLeftFrequencyBoundary.Value, (double)numericRightFrequencyBoundary.Value);
             PairDouble levelsBoundaries = new PairDouble((double)numericLeftLevelsBoundary.Value, (double)numericRightLevelsBoundary.Value);
+            int numSeries = (int)numericSeriesLength.Value;
             int numLevels = (int)numericLevelsNumber.Value;
             int numInterpolationPoints = (int)numericInterpolationLength.Value;
             if (mSelectedModalSet != null)
                 mSelectedModalSet.ReferenceResponse = mSelectedAcceleration;
+
             // Estimate the characteristics
             mCharacteristics = new ResponseCharacteristics(mSelectedAcceleration, ref frequencyBoundaries, ref levelsBoundaries,
-                                                                                  numLevels, numInterpolationPoints,
+                                                                                  numSeries, numLevels, numInterpolationPoints,
                                                                                   numericResonanceFrequencyReal.Value, numericResonanceFrequencyImaginary.Value, numericResonanceFrequencyAmplitude.Value,
                                                                                   mSelectedModalSet);
+
             // Set signal data to plot
-            mSignalGraphModels[SignalModelType.kImaginary].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyImaginary);
-            mSignalGraphModels[SignalModelType.kReal].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyReal);
-            mSignalGraphModels[SignalModelType.kAmplitude].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyAmplitude);
+            mSignalGraphModels[SignalModelType.kImaginary].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyImaginary, numSeries);
+            mSignalGraphModels[SignalModelType.kReal].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyReal, numSeries);
+            mSignalGraphModels[SignalModelType.kAmplitude].setData(mSelectedAcceleration, frequencyBoundaries, levelsBoundaries, mCharacteristics.ResonanceFrequencyAmplitude, numSeries);
             mHodographGraphModel.setData(mSelectedAcceleration, mCharacteristics.ResonanceRealPeak, mCharacteristics.ResonanceImaginaryPeak);
             if (mSelectedModalSet != null)
                 mMonophaseGraphModel.setData(mSelectedModalSet.Responses);
+
             // Set results
             mDecrementGraphModel.setData(mCharacteristics.Decrement);
-            ModalResults modalResults = new Dictionary<string, ModalParameters>();
-            modalResults.Add("General", mCharacteristics.ModalGeneral);
-            modalResults.Add("Complex", mCharacteristics.ModalComplex);
+            ModalResults modalResults = new ModalResults();
+            modalResults.Add("Обобщенный", mCharacteristics.ModalGeneral);
+            modalResults.Add("Комплексный", mCharacteristics.ModalComplex);
             foreach (ModalGraphModel model in mModalGraphModels)
                 model.setData(modalResults);
+
             // Correct input parameters
             numericLeftFrequencyBoundary.Value = frequencyBoundaries.Item1;
             numericRightFrequencyBoundary.Value = frequencyBoundaries.Item2;
@@ -211,7 +222,7 @@ namespace GenCalc
                 numericResonanceFrequencyAmplitude.Value = mCharacteristics.ResonanceFrequencyAmplitude;
             numericDecrementByReal.Value = null;
             if (mCharacteristics.Decrement != null)
-            { 
+            {
                 if (mCharacteristics.Decrement.Real > 0)
                     numericDecrementByReal.Value = mCharacteristics.Decrement.Real;
             }

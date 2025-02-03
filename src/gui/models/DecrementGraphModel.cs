@@ -9,8 +9,8 @@ namespace GenCalc.Gui.Plot
         public DecrementGraphModel(in WpfPlot graph) : base(graph)
         {
             mGraph.plt.Legend(location: legendLocation.upperLeft);
-            mGraph.plt.XLabel("Level");
-            mGraph.plt.YLabel("Logarithmic Decrement");
+            mGraph.plt.XLabel("Уровень");
+            mGraph.plt.YLabel("Логарифмический декремент");
         }
 
         public void setData(DecrementData data)
@@ -31,22 +31,22 @@ namespace GenCalc.Gui.Plot
             // Imaginary 
             Utilities.dictionaryToVectors(mData.Imaginary, out double[] XImag, out double[] YImag);
             if (XImag.Length > 1)
-                mGraph.plt.PlotScatterHighlight(XImag, YImag, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Imaginary");
+                mGraph.plt.PlotScatterHighlight(XImag, YImag, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Мнимый");
             // Amplitude
             Utilities.dictionaryToVectors(mData.Amplitude, out double[] XAmp, out double[] YAmp);
             if (XAmp.Length > 1)
-                mGraph.plt.PlotScatterHighlight(XAmp, YAmp, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Amplitude");
+                mGraph.plt.PlotScatterHighlight(XAmp, YAmp, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Амплитудный");
             // General characteristics
             if (mData.General != null && mData.General.Count > 0)
             {
                 Utilities.dictionaryToVectors(mData.General, out double[] XGen, out double[] YGen);
-                mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "General");
+                mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, markerSize: mkMarkerSize, label: "Обобщенный");
             }
             // Complex characteristics
             if (mData.Complex != null && mData.Complex.Count > 0)
             {
                 Utilities.dictionaryToVectors(mData.Complex, out double[] XGen, out double[] YGen);
-                mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, lineStyle: LineStyle.Dash, markerShape: MarkerShape.none, label: "Complex");
+                mGraph.plt.PlotScatterHighlight(XGen, YGen, lineWidth: mkLineWidth, lineStyle: LineStyle.Dash, markerShape: MarkerShape.none, label: "Комплексный");
             }
             mGraph.Render(lowQuality: false);
         }

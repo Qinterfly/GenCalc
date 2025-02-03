@@ -8,8 +8,8 @@ namespace GenCalc.Gui.Plot
     {
         public HodographGraphModel(in WpfPlot graph) : base(graph)
         {
-            mGraph.plt.XLabel("Real, m/s^2");
-            mGraph.plt.YLabel("Imaginary, m/s^2");
+            mGraph.plt.XLabel("Действительная");
+            mGraph.plt.YLabel("Мнимая");
         }
 
         public void setData(Response signal, double resonanceRealPeak, double resonanceImaginaryPeak)

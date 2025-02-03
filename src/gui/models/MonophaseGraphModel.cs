@@ -10,8 +10,8 @@ namespace GenCalc.Gui.Plot
     {
         public MonophaseGraphModel(in WpfPlot graph) : base(graph)
         {
-            mGraph.plt.XLabel("Frequency");
-            mGraph.plt.YLabel("Real/Imaginary");
+            mGraph.plt.XLabel("Частота");
+            mGraph.plt.YLabel("Вещественная/мнимая");
             mGraph.plt.Legend(location: legendLocation.lowerRight);
             mFrequency = new Dictionary<string, double[]>();
             mMonophaseParameter = new Dictionary<string, double[]>();

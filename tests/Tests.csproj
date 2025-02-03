@@ -103,6 +103,7 @@
     <Compile Include="TestsApplication.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="config\packages.config" />
     <None Include="packages.config" />
     <None Include="properties\Settings.settings">

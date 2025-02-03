@@ -92,28 +92,28 @@ namespace GenCalc
             if (openFileDialog.ShowDialog() == true)
             {
                 openProject(openFileDialog.FileName);
-                setStatus("The project was successfuly opened");
+                setStatus("Проект успешно открыт");
             }
             else
             {
-                setStatus("An error occured while choosing a project file");
+                setStatus("Произошла ошибка при открытии файла проекта");
                 return;
             }
         }
 
         private void buttonSelectAcceleration_Click(object sender, RoutedEventArgs e)
         {
-            processSelectionWithStatus(selectAcceleration(), "The acceleration was selected via TestLab", "An error occured while selecting an acceleration");
+            processSelectionWithStatus(selectAcceleration(), "Ускорение выбрано через TestLab", "Произошла ошибка при выборе сигнала ускорения");
         }
 
         private void buttonSelectForces_Click(object sender, RoutedEventArgs e)
         {
-            processSelectionWithStatus(selectForces(), "The forces were selected via TestLab", "An error occured while selecting forces");
+            processSelectionWithStatus(selectForces(), "Силы выбраны через TestLab", "Произошла ошибка при выборе сил");
         }
 
         private void buttonSelectResponses_Click(object sender, RoutedEventArgs e)
         {
-            processSelectionWithStatus(selectResponses(), "The responses were selected via TestLab", "An error occured while selecting responses");
+            processSelectionWithStatus(selectResponses(), "Отклики выбраны через TestLab", "Произошла ошибка при выборе откликов");
         }
 
         private void buttonExportExcel_Click(object sender, RoutedEventArgs e)
@@ -124,12 +124,12 @@ namespace GenCalc
             dialog.FilterIndex = 1;
             dialog.RestoreDirectory = true;
             if (dialog.ShowDialog() == true)
-            { 
+            {
                 try
-                {   
+                {
                     ExcelExporter exporter = new ExcelExporter(mCharacteristics, mSelectedModalSet);
                     exporter.write(dialog.FileName);
-                    setStatus("Excel document successfully created");
+                    setStatus("Документ Excel успешно создан");
                 }
                 catch (System.Runtime.InteropServices.COMException exc)
                 {
@@ -181,7 +181,7 @@ namespace GenCalc
             const string format = "F4";
             string labelX = coordinates.Item1.ToString(format);
             string labelY = coordinates.Item2.ToString(format);
-            setStatus($"Selected point: ({labelX}, {labelY})");
+            setStatus($"Выбрана точка: ({labelX}, {labelY})");
             try
             {
                 Clipboard.SetText(labelY, TextDataFormat.Text);

@@ -9,8 +9,8 @@
     mc:Ignorable="d"
     Title="GenCalc"
     RenderOptions.BitmapScalingMode="NearestNeighbor"
-    Height="700"
-    Width="800"
+    Height="735"
+    Width="900"
     WindowStartupLocation="CenterScreen"
     FontSize="{StaticResource appFontSize}"
     Icon="/GenCalc;component/resources/wave.png"
@@ -25,7 +25,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="272*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="175*"/>
+                <ColumnDefinition Width="200*"/>
             </Grid.ColumnDefinitions>
             <Grid x:Name="graphGrid">
                 <Grid.ColumnDefinitions>
@@ -37,27 +37,27 @@
                     <RowDefinition Height="281*"/>
                 </Grid.RowDefinitions>
                 <TabControl x:Name="tabInputGraphs" Margin="5" mah:HeaderedControlHelper.HeaderFontSize="{StaticResource headerFontSize}" Style="{DynamicResource MahApps.Styles.TabControl.AnimatedSingleRow}">
-                    <TabItem x:Name="tabItemGraphImaginaryPart" Header="Imaginary">
+                    <TabItem x:Name="tabItemGraphImaginaryPart" Header="Мнимая">
                         <Grid x:Name="gridGraphImaginaryPart" Margin="0">
                             <WpfPlot x:Name="graphImaginaryPart" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphRealPart" Header="Real">
+                    <TabItem x:Name="tabItemGraphRealPart" Header="Вещественная">
                         <Grid x:Name="gridGraphRealPart" Margin="0">
                             <WpfPlot x:Name="graphRealPart" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphAmplitude" Header="Amplitude">
+                    <TabItem x:Name="tabItemGraphAmplitude" Header="Амплитуда">
                         <Grid x:Name="gridGraphAmplitude" Margin="0">
                             <WpfPlot x:Name="graphAmplitude" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphHodograph" Header="Hodograph">
+                    <TabItem x:Name="tabItemGraphHodograph" Header="Годограф">
                         <Grid x:Name="gridGraphHodograph" Margin="0">
                             <WpfPlot x:Name="graphHodograph" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphMonophase" Header="Monophase">
+                    <TabItem x:Name="tabItemGraphMonophase" Header="Монофазный">
                         <Grid x:Name="gridGraphMonophase" Margin="0">
                             <WpfPlot x:Name="graphMonophase" Margin="0"/>
                         </Grid>
@@ -65,27 +65,27 @@
                 </TabControl>
                 <GridSplitter x:Name="graphGridSplitter" HorizontalAlignment="Stretch" ShowsPreview="False" Height="2" Grid.Row="1" VerticalAlignment="Center" Background="#FFDADADA"/>
                 <TabControl x:Name="tabOutputGraphs" Margin="5" Grid.Row="2" mah:HeaderedControlHelper.HeaderFontSize="{StaticResource headerFontSize}" Style="{DynamicResource MahApps.Styles.TabControl.AnimatedSingleRow}">
-                    <TabItem x:Name="tabItemGraphDecrement" Header="Decrement">
+                    <TabItem x:Name="tabItemGraphDecrement" Header="Декремент">
                         <Grid x:Name="gridGraphDecrement" Margin="0">
                             <WpfPlot x:Name="graphDecrement" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphModalMass" Header="Mass">
+                    <TabItem x:Name="tabItemGraphModalMass" Header="Масса">
                         <Grid x:Name="gridGraphModalMass" Margin="0">
                             <WpfPlot x:Name="graphModalMass" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphModalStiffness" Header="Stiffness">
+                    <TabItem x:Name="tabItemGraphModalStiffness" Header="Жесткость">
                         <Grid x:Name="gridGraphModalStiffness" Margin="0">
                             <WpfPlot x:Name="graphModalStiffness" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphModalDamping" Header="Damping">
+                    <TabItem x:Name="tabItemGraphModalDamping" Header="Демпфирование">
                         <Grid x:Name="gridGraphModalDamping" Margin="0">
                             <WpfPlot x:Name="graphModalDamping" Margin="0"/>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="tabItemGraphModalFrequency" Header="Frequency">
+                    <TabItem x:Name="tabItemGraphModalFrequency" Header="Частота">
                         <Grid x:Name="gridGraphModalFrequency" Margin="0">
                             <WpfPlot x:Name="graphModalFrequency" Margin="0"/>
                         </Grid>
@@ -101,7 +101,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <GroupBox x:Name="groupBoxProject" Header="Project" Margin="0" FontWeight="Bold">
+                <GroupBox x:Name="groupBoxProject" Header="Проект" Margin="0" FontWeight="Bold">
                     <Grid x:Name="gridProject" Margin="0,5,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -112,8 +112,8 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Label x:Name="labelPathProject" Content="Path: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
-                        <Label x:Name="labelSelectedAcceleration" Content="Accel:" HorizontalAlignment="Left" Margin="0" Grid.Row="1" VerticalAlignment="Center" FontWeight="Normal" />
+                        <Label x:Name="labelPathProject" Content="Путь: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
+                        <Label x:Name="labelSelectedAcceleration" Content="Ускорение:" HorizontalAlignment="Left" Margin="0" Grid.Row="1" VerticalAlignment="Center" FontWeight="Normal" />
                         <TextBox x:Name="textBoxProjectPath" Grid.Column="1" Margin="5,0,5,5" TextWrapping="Wrap" FontWeight="Normal" VerticalAlignment="Center" IsReadOnly="True" FontSize="{StaticResource appFontSize}"/>
                         <TextBox x:Name="textBoxSelectedAcceleration" Grid.Column="1" Margin="5,0" Grid.Row="1" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True" FontSize="{StaticResource appFontSize}">
                             <TextBox.ContextMenu>
@@ -136,7 +136,7 @@
                         </Button>
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="groupBoxModal" Header="Modal Data" Margin="0,5,0,0" Grid.Row="1" FontWeight="Bold">
+                <GroupBox x:Name="groupBoxModal" Header="Модальные данные" Margin="0,5,0,0" Grid.Row="1" FontWeight="Bold">
                     <Grid x:Name="gridModal" Margin="0,5,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -147,11 +147,11 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Label x:Name="labelForces" Content="Forces: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
+                        <Label x:Name="labelForces" Content="Силы: " HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Center" FontWeight="Normal"/>
                         <ListBox x:Name="listBoxForces" Grid.Column="1" BorderThickness="1" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal" Margin="5,0,5,5" FontSize="{StaticResource appFontSize}">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="_Remove all" Click="removeForces"/>
+                                    <MenuItem Header="_Удалить все" Click="removeForces"/>
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
@@ -161,11 +161,11 @@
                                 Click="buttonSelectForces_Click">
                             <Image Source="../../resources/symbolF.png"></Image>
                         </Button>
-                        <Label x:Name="labelResponses" Content="Responses: " Grid.Row="1" Margin="0,0,0,5" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Normal"/>
+                        <Label x:Name="labelResponses" Content="Отклики: " Grid.Row="1" Margin="0,0,0,5" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Normal"/>
                         <ListBox x:Name="listBoxResponses" Grid.Column="1" Grid.Row="1" BorderThickness="1" Margin="5,0,5,5" BorderBrush="LightGray" HorizontalAlignment="Stretch" FontWeight="Normal" FontSize="{StaticResource appFontSize}">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="_Remove all" Click="removeResponses"/>
+                                    <MenuItem Header="_Удалить все" Click="removeResponses"/>
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
@@ -177,7 +177,7 @@
                         </Button>
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="groupBoxCalculationParameters" Header="Calculation Parameters" Margin="0,5" Grid.Row="2" FontWeight="Bold">
+                <GroupBox x:Name="groupBoxCalculationParameters" Header="Параметры расчета" Margin="0,5" Grid.Row="2" FontWeight="Bold">
                     <Grid x:Name="gridCalculationParameters" Margin="0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -191,31 +191,35 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Label x:Name="labelInterpolationLength" Content="Interpolation length:" Margin="0" FontWeight="Normal" VerticalAlignment="Center"/>
-                        <Label x:Name="labelLevelsNumber" Content="Number of levels:" Margin="0" Grid.Row="1" FontWeight="Normal" VerticalAlignment="Center"/>
-                        <Label x:Name="labelLevelsBoundaries" Content="Levels boundaries:" Margin="0" Grid.Row="2" FontWeight="Normal" VerticalAlignment="Center"/>
-                        <Label x:Name="labelFrequencyBoundaries" Content="Frequency boundaries:" Margin="0" Grid.Row="3" FontWeight="Normal" VerticalAlignment="Center"/>
-                        <mah:NumericUpDown x:Name="numericInterpolationLength" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"                                      
+                        <Label x:Name="labelSeriesLength" Content="Длина ряда:" Margin="0" Grid.Row="0" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <Label x:Name="labelInterpolationLength" Content="Длина интерполяции:" Margin="0" Grid.Row="1" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <Label x:Name="labelLevelsNumber" Content="Число уровней:" Margin="0" Grid.Row="2" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <Label x:Name="labelLevelsBoundaries" Content="Границы уровней:" Margin="0" Grid.Row="3" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <Label x:Name="labelFrequencyBoundaries" Content="Границы частот:" Margin="0" Grid.Row="4" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <mah:NumericUpDown x:Name="numericSeriesLength" Grid.Row="0" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"                                      
+                                           Value="6" Minimum="1" Maximum="20" ParsingNumberStyle="Integer" HideUpDownButtons="True"
+                                           KeyDown="baseNumericChanged" LostFocus="baseNumericChanged" FontSize="{StaticResource appFontSize}"/>
+                        <mah:NumericUpDown x:Name="numericInterpolationLength" Grid.Row="1" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"                                      
                                            Value="128" Minimum="32" Maximum="100000" ParsingNumberStyle="Integer" HideUpDownButtons="True"
                                            KeyDown="baseNumericChanged" LostFocus="baseNumericChanged" FontSize="{StaticResource appFontSize}"/>
-                        <mah:NumericUpDown x:Name="numericLevelsNumber" Grid.Row="1" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"
+                        <mah:NumericUpDown x:Name="numericLevelsNumber" Grid.Row="2" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"
                                            Value="96" Minimum="1" Maximum="10000" ParsingNumberStyle="Integer" HideUpDownButtons="True"
                                            KeyDown="baseNumericChanged" LostFocus="baseNumericChanged" FontSize="{StaticResource appFontSize}"/>
-                        <mah:NumericUpDown x:Name="numericLeftLevelsBoundary" Grid.Row="2" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"
+                        <mah:NumericUpDown x:Name="numericLeftLevelsBoundary" Grid.Row="3" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"
                                            Value="0.1" Interval="0.05" Minimum="0" Maximum="1" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="numericLevelsBoundariesChanged" LostFocus="numericFrequencyBoundariesChanged" FontSize="{StaticResource appFontSize}"/>
-                        <mah:NumericUpDown x:Name="numericRightLevelsBoundary" Grid.Row="2" Grid.Column="2" Margin="5" FontWeight="Normal" TextAlignment="Left"
+                        <mah:NumericUpDown x:Name="numericRightLevelsBoundary" Grid.Row="3" Grid.Column="2" Margin="5" FontWeight="Normal" TextAlignment="Left"
                                            Value="0.9" Interval="0.05" Minimum="0" Maximum="1" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="numericLevelsBoundariesChanged" LostFocus="numericFrequencyBoundariesChanged" FontSize="{StaticResource appFontSize}"/>
-                        <mah:NumericUpDown x:Name="numericLeftFrequencyBoundary" Grid.Row="3" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"
+                        <mah:NumericUpDown x:Name="numericLeftFrequencyBoundary" Grid.Row="4" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left"
                                            Minimum="0" Interval="0.05" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="numericFrequencyBoundariesChanged" LostFocus="numericFrequencyBoundariesChanged" FontSize="{StaticResource appFontSize}"/>
-                        <mah:NumericUpDown x:Name="numericRightFrequencyBoundary" Grid.Row="3" Grid.Column="2" Margin="5" FontWeight="Normal" TextAlignment="Left"
+                        <mah:NumericUpDown x:Name="numericRightFrequencyBoundary" Grid.Row="4" Grid.Column="2" Margin="5" FontWeight="Normal" TextAlignment="Left"
                                            Minimum="0" Interval="0.05" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="numericFrequencyBoundariesChanged" LostFocus="numericFrequencyBoundariesChanged" FontSize="{StaticResource appFontSize}"/>
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="groupBoxOutput" Header="Output" Margin="0" Grid.Row="3" FontWeight="Bold">
+                <GroupBox x:Name="groupBoxOutput" Header="Выходные данные" Margin="0" Grid.Row="3" FontWeight="Bold">
                     <Grid x:Name="gridOutput" Margin="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -228,10 +232,10 @@
                             <ColumnDefinition />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <Label x:Name="labelResonanceFrequencyReal" Content="Real" Margin="0" Grid.Row="0" Grid.Column="1" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <Label x:Name="labelResonanceFrequencyImaginary" Content="Imaginary" Margin="0" Grid.Row="0" Grid.Column="2" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <Label x:Name="labelResonanceFrequencyAmplitude" Content="Amplitude" Margin="0" Grid.Row="0" Grid.Column="3" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <Label x:Name="labelResonanceFrequency" Content="Frequency:" Margin="0" Grid.Row="1" Grid.Column="0" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <Label x:Name="labelResonanceFrequencyReal" Content="Вещественная" Margin="0" Grid.Row="0" Grid.Column="1" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <Label x:Name="labelResonanceFrequencyImaginary" Content="Мнимая" Margin="0" Grid.Row="0" Grid.Column="2" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <Label x:Name="labelResonanceFrequencyAmplitude" Content="Амплитудная" Margin="0" Grid.Row="0" Grid.Column="3" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <Label x:Name="labelResonanceFrequency" Content="Частота:" Margin="0" Grid.Row="1" Grid.Column="0" FontWeight="Normal" VerticalAlignment="Center"/>
                         <mah:NumericUpDown x:Name="numericResonanceFrequencyReal" Grid.Row="1" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" IsReadOnly="True"
                                            Minimum="0" Interval="0.05" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="baseNumericChanged" LostFocus="baseNumericChanged" FontSize="{StaticResource appFontSize}"/>
@@ -241,11 +245,11 @@
                         <mah:NumericUpDown x:Name="numericResonanceFrequencyAmplitude" Grid.Row="1" Grid.Column="3" Margin="5" FontWeight="Normal" TextAlignment="Left" IsReadOnly="True"
                                            Minimum="0" Interval="0.05" StringFormat="F3" ParsingNumberStyle="Float" HideUpDownButtons="True"
                                            KeyDown="baseNumericChanged" LostFocus="baseNumericChanged" FontSize="{StaticResource appFontSize}"/>
-                        <Label x:Name="labelDecrementByReal" Grid.Row="2" Grid.Column="0" Content="Decrement:" Margin="0" FontWeight="Normal" VerticalAlignment="Center"/>
+                        <Label x:Name="labelDecrementByReal" Grid.Row="2" Grid.Column="0" Content="Декремент:" Margin="0" FontWeight="Normal" VerticalAlignment="Center"/>
                         <mah:NumericUpDown x:Name="numericDecrementByReal" Grid.Row="2" Grid.Column="1" Margin="5" FontWeight="Normal" TextAlignment="Left" StringFormat="F5" IsReadOnly="True" HideUpDownButtons="True" FontSize="{StaticResource appFontSize}"/>
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="groupBoxExport" Header="Export" Margin="0" Grid.Row="4" FontWeight="Bold">
+                <GroupBox x:Name="groupBoxExport" Header="Экспорт" Margin="0" Grid.Row="4" FontWeight="Bold">
                     <Grid x:Name="gridExport" Margin="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>

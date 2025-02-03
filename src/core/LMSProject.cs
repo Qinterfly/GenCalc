@@ -40,7 +40,8 @@ namespace GenCalc.Core.Project
                     IData dataSelected = dataWatch.Data;
                     AttributeMap attributeMap = dataSelected.AttributeMap;
                     int nSelected = attributeMap.Count;
-                    for (int iSignal = 0; iSignal != nSelected; ++iSignal) { 
+                    for (int iSignal = 0; iSignal != nSelected; ++iSignal)
+                    {
                         DataWatch blockWatch = mApp.FindDataWatch(attributeMap[iSignal]);
                         if (blockWatch.Data.Type != "LmsHq::DataModelI::Expression::CBufferIBlock")
                             continue;
@@ -74,21 +75,19 @@ namespace GenCalc.Core.Project
             }
             catch
             {
-                
+                selectedSignals = new List<Response>();
             }
-            if (selectedSignals.Count == 0)
-                return null;
             return selectedSignals;
         }
 
         public Response retrieveSelectedSignal(string pathSignal = null)
         {
-            List<Response> selectedSignals;
+            List<Response> selectedSignals = new List<Response>();
             if (pathSignal == null)
                 selectedSignals = retrieveSelectedSignals();
             else
                 selectedSignals = retrieveSelectedSignals(new List<string>() { pathSignal });
-            return selectedSignals == null ? null : selectedSignals[0];
+            return selectedSignals.Count > 0 ? selectedSignals[0] : null;
         }
 
         private Response acquireResponse(in string path, in IBlock2 signal, in AttributeMap properties)
@@ -130,7 +129,7 @@ namespace GenCalc.Core.Project
             double[] imaginaryPart = new double[nResponse];
             for (int k = 0; k != nResponse; ++k)
             {
-                realPart[k]      = data[k, 0] * sign;
+                realPart[k] = data[k, 0] * sign;
                 imaginaryPart[k] = data[k, 1] * sign;
             }
             string originalRun = properties["Original run"].AttributeMap["Contents"];

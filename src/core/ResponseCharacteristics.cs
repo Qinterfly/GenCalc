@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using MathNet.Numerics;
 using MathNet.Numerics.Interpolation;
 using MathNet.Numerics.RootFinding;
@@ -18,23 +20,27 @@ namespace GenCalc.Core.Numerical
     {
         public ResponseCharacteristics(in Response acceleration,
                                        ref PairDouble frequencyBoundaries, ref PairDouble levelsBoundaries,
-                                       int numLevels, int numInterpolationPoints = 512,
+                                       int numSeries, int numLevels, int numInterpolationPoints = 512,
                                        double? manualFrequencyReal = null, double? manualFrequencyImaginary = null, double? manualFrequencyAmplitude = null,
                                        in ModalDataSet modalSet = null)
         {
             if (acceleration == null)
                 return;
+
             // Perform the double integration of the acceleration signal
             Response displacement = acceleration.convert(ResponseType.kDisp);
+
             // Correct limits of levels and frequencies
             if (!correctFrequencyBoundaries(displacement, ref frequencyBoundaries))
                 return;
             correctLevelsBoundaries(ref levelsBoundaries);
+
             // Interpolate the displacement
             double[] frequency = displacement.Frequency;
-            CubicSpline splineRealDisplacement = CubicSpline.InterpolateAkima(frequency, displacement.RealPart);
-            CubicSpline splineImagDisplacement = CubicSpline.InterpolateAkima(frequency, displacement.ImaginaryPart);
-            CubicSpline splineAmplitudeDisplacement = CubicSpline.InterpolateAkima(frequency, displacement.Amplitude);
+            IInterpolation splineRealDisplacement = createInterpolant(frequency, displacement.RealPart, numSeries);
+            IInterpolation splineImagDisplacement = createInterpolant(frequency, displacement.ImaginaryPart, numSeries);
+            IInterpolation splineAmplitudeDisplacement = createInterpolant(frequency, displacement.Amplitude, numSeries);
+
             // Create mesh of levels
             double startLevel = levelsBoundaries.Item1;
             double endLevel = levelsBoundaries.Item2;
@@ -42,6 +48,7 @@ namespace GenCalc.Core.Numerical
             Levels = new double[numLevels];
             for (int i = 0; i != numLevels; ++i)
                 Levels[i] = startLevel + i * stepLevel;
+
             // Finding resonance frequencies
             double startFrequency = acceleration.getFrequencyValue();
             // Real
@@ -59,27 +66,30 @@ namespace GenCalc.Core.Numerical
                 ResonanceFrequencyAmplitude = retrieveResonanceFrequency(splineAmplitudeDisplacement, true, frequencyBoundaries, numInterpolationPoints, startFrequency);
             else
                 ResonanceFrequencyAmplitude = (double)manualFrequencyAmplitude;
+
             // Calculate resonance peaks
             Decrement = new DecrementData();
             ResonanceRealPeak = splineRealDisplacement.Interpolate(ResonanceFrequencyReal);
             ResonanceImaginaryPeak = splineImagDisplacement.Interpolate(ResonanceFrequencyImaginary);
             ResonanceAmplitudePeak = splineAmplitudeDisplacement.Interpolate(ResonanceFrequencyAmplitude);
+
             // Compute decrements
             calculateDecrement(DecrementType.kImaginary, splineImagDisplacement, frequencyBoundaries, numInterpolationPoints);
             calculateDecrement(DecrementType.kAmplitude, splineAmplitudeDisplacement, frequencyBoundaries, numInterpolationPoints);
             calculateDecrementByReal(splineRealDisplacement, frequencyBoundaries, numInterpolationPoints);
+
             // Modal data
             if (modalSet != null && modalSet.isCorrect() && frequency.Length == modalSet.ReferenceResponse.Amplitude.Length)
             {
                 ModalGeneral = new ModalParameters();
                 Response referenceDisplacement = modalSet.ReferenceResponse.convert(ResponseType.kDisp);
-                CubicSpline splineAmplitudeReference = CubicSpline.InterpolateAkima(frequency, referenceDisplacement.Amplitude);
+                IInterpolation splineAmplitudeReference = createInterpolant(frequency, referenceDisplacement.Amplitude, numSeries);
                 // By amplitudes
-                CubicSpline splineGeneralForce = calculateGeneralForce(modalSet);
+                IInterpolation splineGeneralForce = calculateGeneralForce(modalSet, numSeries);
                 if (splineGeneralForce != null)
                     calculateModal(splineAmplitudeReference, splineGeneralForce, frequencyBoundaries, numInterpolationPoints);
                 // By complex power
-                Tuple<CubicSpline, CubicSpline> complexPower = calculateComplexPower(modalSet);
+                Tuple<IInterpolation, IInterpolation> complexPower = calculateComplexPower(modalSet, numSeries);
                 if (complexPower != null)
                 {
                     ModalComplex = new ModalParameters();
@@ -87,13 +97,23 @@ namespace GenCalc.Core.Numerical
                     estimateByComplexPower(complexPower, splineAmplitudeReference, resonanceFrequencyComplexPower);
                 }
             }
+
             // Convert back the resonance peaks
-            CubicSpline splineRealAcceleration = CubicSpline.InterpolateAkima(frequency, acceleration.RealPart);
-            CubicSpline splineImagAcceleration = CubicSpline.InterpolateAkima(frequency, acceleration.ImaginaryPart);
-            CubicSpline splineAmplitudeAcceleration = CubicSpline.InterpolateAkima(frequency, acceleration.Amplitude);
+            IInterpolation splineRealAcceleration = createInterpolant(frequency, acceleration.RealPart, numSeries);
+            IInterpolation splineImagAcceleration = createInterpolant(frequency, acceleration.ImaginaryPart, numSeries);
+            IInterpolation splineAmplitudeAcceleration = createInterpolant(frequency, acceleration.Amplitude, numSeries);
             ResonanceRealPeak = splineRealAcceleration.Interpolate(ResonanceFrequencyReal);
             ResonanceImaginaryPeak = splineImagAcceleration.Interpolate(ResonanceFrequencyImaginary);
             ResonanceAmplitudePeak = splineAmplitudeAcceleration.Interpolate(ResonanceFrequencyAmplitude);
+        }
+
+        static public IInterpolation createInterpolant(double[] xData, double[] yData, int numSeries)
+        {
+            FourierSeries series = new FourierSeries(xData, yData, numSeries);
+            if (series.isValid())
+                return series;
+            else
+                return CubicSpline.InterpolatePchip(xData, yData);
         }
 
         private bool correctFrequencyBoundaries(in Response response, ref PairDouble boundaries)
@@ -131,7 +151,7 @@ namespace GenCalc.Core.Numerical
             levelsBoundaries = new PairDouble(resMin, resMax);
         }
 
-        private double retrieveResonanceFrequency(CubicSpline spline, bool isDerivativeZero, in PairDouble frequencyBoundaries, int numPoints, double approximation)
+        private double retrieveResonanceFrequency(IInterpolation spline, bool isDerivativeZero, in PairDouble frequencyBoundaries, int numPoints, double approximation)
         {
             Func<double, double> resonanceFunc;
             Func<double, double> resonanceDiffFunc;
@@ -158,12 +178,12 @@ namespace GenCalc.Core.Numerical
             {
                 try
                 {
-                    resFrequencies[i] = NewtonRaphson.FindRootNearGuess(resonanceFunc, resonanceDiffFunc, resFrequencies[i], frequencyBoundaries.Item1, frequencyBoundaries.Item2);
+                    resFrequencies[i] = NewtonRaphson.FindRootNearGuess(resonanceFunc, resonanceDiffFunc, resFrequencies[i], frequencyBoundaries.Item1, frequencyBoundaries.Item2, maxIterations: mkNumRootIterations);
                 }
                 catch
                 {
                     bool isFind = RobustNewtonRaphson.TryFindRoot(resonanceFunc, resonanceDiffFunc, frequencyBoundaries.Item1, frequencyBoundaries.Item2,
-                                                                  accuracy: 1e-8, maxIterations: 100, subdivision: 20, out double root);
+                                                                  accuracy: mkRootAccuracy, maxIterations: mkNumRootIterations, subdivision: mkNumRootSubdivisions, out double root);
                     if (isFind)
                         resFrequencies[i] = root;
                     else
@@ -185,7 +205,7 @@ namespace GenCalc.Core.Numerical
             return resFrequencies[indClosestResonance];
         }
 
-        private void calculateDecrement(DecrementType type, CubicSpline spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
+        private void calculateDecrement(DecrementType type, IInterpolation spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
@@ -237,7 +257,7 @@ namespace GenCalc.Core.Numerical
             }
         }
 
-        private void calculateDecrementByReal(CubicSpline spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
+        private void calculateDecrementByReal(IInterpolation spline, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
@@ -254,8 +274,8 @@ namespace GenCalc.Core.Numerical
             double rightFrequency = roots[numRoots - 1];
             try
             {
-                leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, leftFrequency, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
-                rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, rightFrequency, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
+                leftFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, leftFrequency, startFrequency, endFrequency, maxIterations: mkNumRootIterations);
+                rightFrequency = NewtonRaphson.FindRootNearGuess(fun, diffFun, rightFrequency, startFrequency, endFrequency, maxIterations: mkNumRootIterations);
             }
             catch
             {
@@ -264,7 +284,7 @@ namespace GenCalc.Core.Numerical
             Decrement.Real = Math.PI * (rightFrequency - leftFrequency) / ResonanceFrequencyReal;
         }
 
-        private void calculateModal(CubicSpline amplitude, in CubicSpline force, in PairDouble frequencyBoundaries, int numInterpolationPoints)
+        private void calculateModal(IInterpolation amplitude, in IInterpolation force, in PairDouble frequencyBoundaries, int numInterpolationPoints)
         {
             const double kTwoPi = 2.0 * Math.PI;
             int numLevels = Levels.Length;
@@ -365,7 +385,7 @@ namespace GenCalc.Core.Numerical
             }
         }
 
-        private PairDouble findLevelRootsAroundResonance(CubicSpline spline, double targetValue, in PairDouble frequencyBoundaries, int numPoints, double resonanceFrequency)
+        private PairDouble findLevelRootsAroundResonance(IInterpolation spline, double targetValue, in PairDouble frequencyBoundaries, int numPoints, double resonanceFrequency)
         {
             double startFrequency = frequencyBoundaries.Item1;
             double endFrequency = frequencyBoundaries.Item2;
@@ -386,8 +406,8 @@ namespace GenCalc.Core.Numerical
             double rightRoot = roots[rightIndex];
             try
             {
-                leftRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, leftRoot, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
-                rightRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, rightRoot, startFrequency, endFrequency, maxIterations: mkNumRootFindingIterations);
+                leftRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, leftRoot, startFrequency, endFrequency, maxIterations: mkNumRootIterations);
+                rightRoot = NewtonRaphson.FindRootNearGuess(fun, diffFun, rightRoot, startFrequency, endFrequency, maxIterations: mkNumRootIterations);
             }
             catch
             {
@@ -398,7 +418,7 @@ namespace GenCalc.Core.Numerical
             return new PairDouble(leftRoot, rightRoot);
         }
 
-        private CubicSpline calculateGeneralForce(ModalDataSet modalSet)
+        private IInterpolation calculateGeneralForce(ModalDataSet modalSet, int numSeries)
         {
             double kTwoPi = 2.0 * Math.PI;
             List<int> links = modalSet.getForceLinks();
@@ -427,10 +447,10 @@ namespace GenCalc.Core.Numerical
             double[] referenceImag = modalSet.ReferenceResponse.ImaginaryPart;
             for (int i = 0; i != lengthSignal; ++i)
                 generalForce[i] = Math.Abs(generalForce[i] / referenceImag[i] * omega2[i]);
-            return CubicSpline.InterpolateAkima(frequency, generalForce);
+            return createInterpolant(frequency, generalForce, numSeries);
         }
 
-        private Tuple<CubicSpline, CubicSpline> calculateComplexPower(ModalDataSet modalSet)
+        private Tuple<IInterpolation, IInterpolation> calculateComplexPower(ModalDataSet modalSet, int numSeries)
         {
             List<int> links = modalSet.getForceLinks();
             if (links == null)
@@ -458,12 +478,12 @@ namespace GenCalc.Core.Numerical
                 }
             }
             double[] frequency = modalSet.Forces[0].Frequency;
-            CubicSpline resRealSpline = CubicSpline.InterpolateAkima(frequency, resRealPart);
-            CubicSpline resImagSpline = CubicSpline.InterpolateAkima(frequency, resImagPart);
-            return new Tuple<CubicSpline, CubicSpline>(resRealSpline, resImagSpline);
+            IInterpolation resRealSpline = createInterpolant(frequency, resRealPart, numSeries);
+            IInterpolation resImagSpline = createInterpolant(frequency, resImagPart, numSeries);
+            return new Tuple<IInterpolation, IInterpolation>(resRealSpline, resImagSpline);
         }
 
-        private void estimateByComplexPower(Tuple<CubicSpline, CubicSpline> complexPower, CubicSpline reference, double frequency)
+        private void estimateByComplexPower(Tuple<IInterpolation, IInterpolation> complexPower, IInterpolation reference, double frequency)
         {
             const double kTwoPI = 2.0 * Math.PI;
             double radFrequency = kTwoPI * frequency;
@@ -499,7 +519,9 @@ namespace GenCalc.Core.Numerical
         public readonly double ResonanceRealPeak;
         public readonly double ResonanceImaginaryPeak;
         public readonly double ResonanceAmplitudePeak;
-        private int mkNumRootFindingIterations = 200;
+        private int mkNumRootIterations = 200;
+        private int mkNumRootSubdivisions = 20;
+        private double mkRootAccuracy = 1e-8;
     }
 
     public class DecrementData

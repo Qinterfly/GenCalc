@@ -3,6 +3,7 @@ using System.Drawing;
 using ScottPlot;
 using ScottPlot.WinForms.Events;
 using GenCalc.Core.Numerical;
+using MathNet.Numerics.Interpolation;
 
 namespace GenCalc.Gui.Plot
 {
@@ -18,23 +19,24 @@ namespace GenCalc.Gui.Plot
         {
             graph.MouseUpPlottable += RaiseFrequencyBoundariesEvent;
             graph.MouseUpPlottable += RaiseResonanceFrequencyEvent;
-            mGraph.plt.XLabel("Frequency, Hz");
-            mGraph.plt.YLabel("Acceleration, m/s^2");
+            mGraph.plt.XLabel("Частота, Гц");
+            mGraph.plt.YLabel("Перемещения, мм");
         }
 
-        public abstract void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency);
+        public abstract void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency, int numSeries);
 
-        protected void setBaseData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency)
+        protected void setBaseData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency, int numSeries)
         {
             mSignal = signal;
             mFrequencyBoundaries = frequencyBoundaries;
             mLevelsBoundaries = levelsBoundaries;
             mResonanceFrequency = resonanceFrequency;
+            mNumSeries = numSeries;
         }
 
         public override bool isDataSet()
         {
-            return mSignal != null 
+            return mSignal != null
                    && mFrequencyBoundaries != null && mLevelsBoundaries != null
                    && mYData != null && mResonanceFrequency > 0;
         }
@@ -52,7 +54,14 @@ namespace GenCalc.Gui.Plot
             mResonanceFrequencyLine = mGraph.plt.PlotVLine(mResonanceFrequency, draggable: true, lineStyle: LineStyle.Dot, color: Color.Black, lineWidth: 1,
                                                            dragLimitLower: dragFrequencyLimits.Item1, dragLimitUpper: dragFrequencyLimits.Item2);
             // Signal
-            mGraph.plt.PlotScatterHighlight(mSignal.Frequency, mYData, lineWidth: mkLineWidth, markerSize: mkMarkerSize);
+            double[] xData = mSignal.Frequency;
+            int numData = xData.Length;
+            IInterpolation interpolant = ResponseCharacteristics.createInterpolant(xData, mYData, mNumSeries);
+            double[] yIntData = new double[numData];
+            for (int i = 0; i != numData; ++i)
+                yIntData[i] = interpolant.Interpolate(xData[i]);
+            mGraph.plt.PlotScatterHighlight(xData, mYData, lineWidth: 0, markerSize: mkMarkerSize, color: Color.Red);
+            mGraph.plt.PlotScatter(xData, yIntData, lineWidth: mkLineWidth, markerSize: 0, color: Color.Blue);
             mGraph.Render(lowQuality: false);
         }
 
@@ -88,6 +97,7 @@ namespace GenCalc.Gui.Plot
         protected PairDouble mFrequencyBoundaries = null;
         protected PairDouble mLevelsBoundaries = null;
         protected double mResonanceFrequency = -1.0;
+        protected int mNumSeries = 1;
         protected PlottableVLine mResonanceFrequencyLine = null;
         protected PlottableHSpan mFrequencyBoundariesSpan = null;
         protected double[] mYData = null;
@@ -100,9 +110,9 @@ namespace GenCalc.Gui.Plot
 
         }
 
-        public override void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency)
+        public override void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency, int numSeries)
         {
-            setBaseData(signal, frequencyBoundaries, levelsBoundaries, resonanceFrequency);
+            setBaseData(signal, frequencyBoundaries, levelsBoundaries, resonanceFrequency, numSeries);
             mYData = signal.ImaginaryPart;
         }
     }
@@ -114,9 +124,9 @@ namespace GenCalc.Gui.Plot
 
         }
 
-        public override void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency)
+        public override void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency, int numSeries)
         {
-            setBaseData(signal, frequencyBoundaries, levelsBoundaries, resonanceFrequency);
+            setBaseData(signal, frequencyBoundaries, levelsBoundaries, resonanceFrequency, numSeries);
             mYData = signal.RealPart;
         }
     }
@@ -128,9 +138,9 @@ namespace GenCalc.Gui.Plot
 
         }
 
-        public override void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency)
+        public override void setData(in Response signal, in PairDouble frequencyBoundaries, in PairDouble levelsBoundaries, double resonanceFrequency, int numSeries)
         {
-            setBaseData(signal, frequencyBoundaries, levelsBoundaries, resonanceFrequency);
+            setBaseData(signal, frequencyBoundaries, levelsBoundaries, resonanceFrequency, numSeries);
             mYData = signal.Amplitude;
         }
     }

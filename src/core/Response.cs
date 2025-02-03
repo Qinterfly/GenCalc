@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 
 namespace GenCalc.Core.Numerical
 {
@@ -46,8 +47,8 @@ namespace GenCalc.Core.Numerical
                     case ResponseType.kDisp:
                         for (int i = 0; i != nResponse; ++i)
                         {
-                            delimiter           = Math.Pow(twoPI * Frequency[i], 2.0);
-                            resRealPart[i]      /= delimiter;
+                            delimiter = Math.Pow(twoPI * Frequency[i], 2.0);
+                            resRealPart[i] /= delimiter;
                             resImaginaryPart[i] /= delimiter;
                         }
                         break;
@@ -55,9 +56,9 @@ namespace GenCalc.Core.Numerical
                         double tValue;
                         for (int i = 0; i != nResponse; ++i)
                         {
-                            delimiter           = twoPI * Frequency[i];
-                            tValue              = -resRealPart[i];
-                            resRealPart[i]      = resImaginaryPart[i] / delimiter;
+                            delimiter = twoPI * Frequency[i];
+                            tValue = -resRealPart[i];
+                            resRealPart[i] = resImaginaryPart[i] / delimiter;
                             resImaginaryPart[i] = tValue / delimiter;
                         }
                         break;
@@ -108,9 +109,18 @@ namespace GenCalc.Core.Numerical
                 return 0.0;
         }
 
-        public Tuple<double, double> getFrequencyBoundaries() 
+        public Tuple<double, double> getFrequencyBoundaries()
         {
             return new Tuple<double, double>(Frequency[0], Frequency[Frequency.Length - 1]);
+        }
+
+        public void write(string pathFile)
+        {
+            using (StreamWriter stream = new StreamWriter(pathFile))
+            {
+                for (int i = 0; i < Frequency.Length; i++)
+                    stream.Write("{0}\t{1}\t{2}\t{3}\n", Frequency[i], RealPart[i], ImaginaryPart[i], Amplitude[i]);
+            }
         }
 
         // Data

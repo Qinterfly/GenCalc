@@ -14,7 +14,7 @@ namespace GenCalc.Gui.Plot
         public delegate void PointSelectionChangedHandler(PairDouble coordinates);
         public event PointSelectionChangedHandler PointSelectionChangedEvent;
 
-        public AbstractGraphModel(in WpfPlot graph) 
+        public AbstractGraphModel(in WpfPlot graph)
         {
             mGraph = graph;
             mGraph.plt.AntiAlias(true, true, true);
@@ -26,7 +26,7 @@ namespace GenCalc.Gui.Plot
             mGraph.plt.Legend(fontSize: mkLegendFontSize);
             mGraph.MouseDown += selectPoint;
         }
-        
+
         public abstract void plot();
         public abstract bool isDataSet();
 
@@ -112,7 +112,7 @@ namespace GenCalc.Gui.Plot
         // Fields
         protected WpfPlot mGraph = null;
         protected const int mkLineWidth = 2;
-        protected const int mkMarkerSize = 5;
+        protected const int mkMarkerSize = 4;
         protected const int mkLabelFontSize = 16;
         protected const int mkLegendFontSize = 16;
         protected const int mkTickFontSize = 15;

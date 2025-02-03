@@ -10,7 +10,7 @@ namespace GenCalc.Gui.Plot
     {
         public ModalGraphModel(in WpfPlot graph) : base(graph)
         {
-            mGraph.plt.XLabel("Level");
+            mGraph.plt.XLabel("Уровень");
             mGraph.plt.Legend(location: legendLocation.upperLeft);
         }
 
@@ -55,7 +55,7 @@ namespace GenCalc.Gui.Plot
     {
         public ModalMassGraphModel(in WpfPlot graph) : base(graph)
         {
-            graph.plt.YLabel("Modal mass, kg");
+            graph.plt.YLabel("Масса, кг");
         }
 
         public override void plot()
@@ -68,7 +68,7 @@ namespace GenCalc.Gui.Plot
     {
         public ModalStiffnessGraphModel(in WpfPlot graph) : base(graph)
         {
-            graph.plt.YLabel("Modal stiffness, N/m");
+            graph.plt.YLabel("Жесткость, Н/м");
         }
 
         public override void plot()
@@ -81,7 +81,7 @@ namespace GenCalc.Gui.Plot
     {
         public ModalDampingGraphModel(in WpfPlot graph) : base(graph)
         {
-            graph.plt.YLabel("Modal damping, kg/c^2");
+            graph.plt.YLabel("Демпфирование, кг/с^2");
         }
 
         public override void plot()
@@ -94,7 +94,7 @@ namespace GenCalc.Gui.Plot
     {
         public ModalFrequencyGraphModel(in WpfPlot graph) : base(graph)
         {
-            graph.plt.YLabel("Modal frequency, Hz");
+            graph.plt.YLabel("Частота, Гц");
         }
 
         public override void plot()
