@@ -30,6 +30,11 @@ namespace GenCalc.Core.Numerical
 
         public FourierSeries(double[] X, double[] Y, int numSeries, double initFrequency = Math.PI, int maxIter = 5000)
         {
+
+
+            if (numSeries <= 0)
+                return;
+
             // Create configuration
             mp_config config = new mp_config();
             config.ftol = 1E-10;
@@ -77,7 +82,7 @@ namespace GenCalc.Core.Numerical
 
         public bool isValid()
         {
-            return _a.Length > 0 && _b.Length > 0 && _w != 0.0;
+            return _a != null && _b != null && _a.Length == _b.Length && _w != 0.0;
         }
 
         // Interpolate at point t
